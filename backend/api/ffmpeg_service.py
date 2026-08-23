@@ -1,8 +1,7 @@
 import os
 import uuid
 
-import ffmpeg
-import yt_dlp
+
 
 from api import douyin_service
 
@@ -12,43 +11,50 @@ from api import douyin_service
 # (contoh: 480 kalau masih berat, 1080 kalau nanti pindah server besar).
 # Isi 0 untuk mematikan pagar.
 try:
-    _MAX_HEIGHT = int(os.environ.get("MAX_HEIGHT", "720") or 0)
+    _MAX_HEIGHT = int(os.environ.get("MAX_HEIGHT", "0") or 0)
 except ValueError:
-    _MAX_HEIGHT = 720
+    _MAX_HEIGHT = 0
 
 
 def _resolution_format(resolution):
-    """Bangun format-selector yt-dlp dari pilihan resolusi.
+    """Bangun format-selector yt-dlp dari pilihan resolusi yang presisi & jernih."""
+    res_str = str(resolution or "").lower()
+    
+    digits = "".join(c for c in res_str if c.isdigit())
+    target_height = int(digits) if digits else None
+    if _MAX_HEIGHT and _MAX_HEIGHT > 0:
+        target_height = min(target_height, _MAX_HEIGHT) if target_height else _MAX_HEIGHT
 
-    Dua aturan penting (pelajaran dari file TikTok tanpa suara):
-    1. Utamakan H.264 (avc1). TikTok/Douyin juga menyediakan H.265 (bytevc1)
-       yang tidak bisa diputar banyak HP Android — dan varian itulah yang
-       tadinya terpilih.
-    2. Selalu minta video+audio (bv*+ba), dengan cadangan file muxed (b).
-       Ini menjamin track audio ikut terunduh."""
-    digits = "".join(c for c in str(resolution or "") if c.isdigit())
-    h_val = int(digits) if digits else None
-    # Terapkan pagar: pilihan user dipangkas ke MAX_HEIGHT bila melebihi,
-    # dan "best" (tanpa angka) otomatis dibatasi MAX_HEIGHT.
-    if _MAX_HEIGHT:
-        h_val = min(h_val, _MAX_HEIGHT) if h_val else _MAX_HEIGHT
-    h = f"[height<={h_val}]" if h_val else ""
-    parts = [
-        f"bv*[vcodec^=avc1]{h}+ba",
-        f"bv*{h}+ba",
-        f"b[vcodec^=avc1]{h}",
-        f"b{h}",
-        "b",
-    ]
-    seen, uniq = set(), []
-    for p in parts:
-        if p not in seen:
-            seen.add(p)
-            uniq.append(p)
-    return "/".join(uniq)
+    if not target_height or target_height >= 1080:
+        return "bv*[vcodec^=avc1]+ba[acodec^=mp4a]/bv*+ba/b[vcodec^=avc1]/b/best"
+    
+    h = target_height
+    return (
+        f"bv*[height<={h}][vcodec^=avc1]+ba[acodec^=mp4a]/"
+        f"bv*[height<={h}]+ba/"
+        f"b[height<={h}]/"
+        f"best[height<={h}]"
+    )
+
+
+import time
+
+def _safe_remove(filepath):
+    """Hapus file secara aman tanpa memicu PermissionError di Windows."""
+    if not filepath or not os.path.exists(filepath):
+        return
+    for _ in range(5):
+        try:
+            os.remove(filepath)
+            break
+        except Exception:
+            time.sleep(0.1)
 
 
 def process_media(original_url, start_time, end_time, output_format="mp4", resolution="best"):
+    from api.yt_dlp_service import clean_input_url, _INFO_CACHE
+    clean_url = clean_input_url(original_url)
+
     os.makedirs("temp_media", exist_ok=True)
 
     file_id = str(uuid.uuid4())
@@ -56,101 +62,133 @@ def process_media(original_url, start_time, end_time, output_format="mp4", resol
     output_filename = f"temp_media/{file_id}_final.{output_format}"
 
     try:
-        if douyin_service.is_douyin(original_url):
-            # Douyin: satu stream dari halaman share; resolusi tidak berlaku.
-            _download_douyin(original_url, temp_raw_file)
-        else:
-            _download_with_ytdlp(original_url, temp_raw_file, resolution=resolution)
+        downloaded = False
+
+        # Coba unduh kilat dari cached direct_url (1-2 detik)
+        is_douyin_url = douyin_service.is_douyin(clean_url)
+        if clean_url in _INFO_CACHE and (resolution == "best" or is_douyin_url):
+            _, cached_info = _INFO_CACHE[clean_url]
+            direct_url = cached_info.get("direct_url")
+            stream_headers = cached_info.get("stream_headers")
+            if direct_url:
+                try:
+                    ref = stream_headers.get("Referer") if stream_headers else None
+                    douyin_service.download_direct(direct_url, temp_raw_file, referer=ref, stream_headers=stream_headers)
+                    if os.path.exists(temp_raw_file) and os.path.getsize(temp_raw_file) > 1024:
+                        downloaded = True
+                except Exception:
+                    if os.path.exists(temp_raw_file):
+                        _safe_remove(temp_raw_file)
+
+        if not downloaded:
+            if douyin_service.is_douyin(clean_url):
+                _download_douyin(clean_url, temp_raw_file)
+            else:
+                _download_with_ytdlp(clean_url, temp_raw_file, resolution=resolution)
 
         if not os.path.exists(temp_raw_file):
             raise Exception("Gagal menyimpan video dari server asal.")
 
         _cut(temp_raw_file, output_filename, start_time, end_time, output_format)
 
-        if os.path.exists(temp_raw_file):
-            os.remove(temp_raw_file)
-
+        _safe_remove(temp_raw_file)
         return output_filename
 
     except Exception as e:
-        if os.path.exists(temp_raw_file):
-            os.remove(temp_raw_file)
+        _safe_remove(temp_raw_file)
         raise Exception(douyin_service.clean_error(str(e)))
 
 
 def _cut(src, dst, start_time, end_time, output_format):
-    """Potong media dengan PRESISI FRAME.
-
-    Pelajaran dari bug "hasil unduhan melenceng beberapa detik":
-    dulu video dipotong dengan vcodec="copy" (salin mentah). Stream-copy
-    hanya bisa mulai di KEYFRAME — pada video sosmed jarak antar keyframe
-    bisa 8 detik lebih, jadi ffmpeg mundur ke keyframe sebelumnya dan
-    hasilnya kelebihan sampai ~6 detik + audio geser tak sinkron.
-    Solusi: encode ulang video (libx264). -ss di input tetap dipakai agar
-    seek cepat; karena ada re-encode, ffmpeg membuang frame sisa hingga
-    titik yang diminta, sehingga potongan akurat sampai ke frame.
-
-    Preset encoder bisa diatur via env FFMPEG_PRESET (default "ultrafast",
-    paling ringan untuk server gratis 0.1 CPU; ganti "veryfast"/"medium"
-    di server yang lebih kuat untuk file lebih kecil)."""
+    import ffmpeg  # Lazy import to speed up initial backend load
+    """Potong media dengan presisi tinggi menggunakan Fast Seek + Ultrafast Re-encoding."""
     start = max(0.0, float(start_time))
     duration = max(0.5, float(end_time) - start)
     start = round(start, 3)
     duration = round(duration, 3)
-    preset = os.environ.get("FFMPEG_PRESET", "ultrafast")
 
-    if output_format in ("jpg", "png"):
-        (
-            ffmpeg
-            .input(src, ss=start)
-            .output(dst, vframes=1)
-            .run(overwrite_output=True, quiet=True)
-        )
-    elif output_format == "mp3":
-        (
-            ffmpeg
-            .input(src, ss=start)
-            .output(dst, t=duration, acodec="libmp3lame", **{"q:a": 2})
-            .run(overwrite_output=True, quiet=True)
-        )
-    else:
-        (
-            ffmpeg
-            .input(src, ss=start)
-            .output(dst, t=duration,
-                    vcodec="libx264", preset=preset, crf=23,
+    is_mp3 = str(output_format).lower() == "mp3"
+
+    try:
+        input_stream = ffmpeg.input(src, ss=start)
+        if is_mp3:
+            (
+                ffmpeg
+                .output(
+                    input_stream,
+                    dst,
+                    t=duration,
+                    acodec="libmp3lame",
+                    audio_bitrate="192k",
+                    timelimit=120,
+                )
+                .run(overwrite_output=True, quiet=True)
+            )
+        else:
+            (
+                ffmpeg
+                .output(
+                    input_stream,
+                    dst,
+                    t=duration,
+                    vcodec="libx264",
+                    preset="ultrafast",
+                    crf=23,
+                    threads=0,
                     pix_fmt="yuv420p",
-                    acodec="aac", audio_bitrate="128k",
-                    movflags="+faststart")
-            .run(overwrite_output=True, quiet=True)
-        )
+                    acodec="aac",
+                    audio_bitrate="192k",
+                    avoid_negative_ts="make_zero",
+                    movflags="+faststart",
+                    timelimit=120,
+                )
+                .run(overwrite_output=True, quiet=True)
+            )
+        if os.path.exists(dst) and os.path.getsize(dst) > 1024:
+            return
+    except Exception as e:
+        if os.path.exists(dst):
+            _safe_remove(dst)
+        raise Exception("Gagal memotong video secara presisi.")
 
 
 def _download_douyin(original_url, dest_path):
     canonical = douyin_service.resolve_douyin_url(original_url)
-    video_id = douyin_service.extract_video_id(canonical)
+    target = canonical or original_url
 
-    share_reason = None
+    # 1. Jalur Utama: yt-dlp dengan Official ByteDance ttwid cookie
+    try:
+        _download_with_ytdlp(target, dest_path, douyin=True)
+        if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024:
+            return
+    except Exception:
+        if os.path.exists(dest_path):
+            _safe_remove(dest_path)
+
+    # 2. Jalur Cadangan: TikWM API
+    tikwm_info = douyin_service.fetch_tikwm_info(original_url) or douyin_service.fetch_tikwm_info(target)
+    if tikwm_info and tikwm_info.get("direct_url"):
+        try:
+            ref = "https://www.tikwm.com/" if douyin_service.is_tiktok(original_url) else douyin_service.DOUYIN_HOME
+            douyin_service.download_direct(tikwm_info["direct_url"], dest_path, referer=ref)
+            if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024:
+                return
+        except Exception:
+            if os.path.exists(dest_path):
+                _safe_remove(dest_path)
+
+    # 3. Jalur Cadangan 2: iesdouyin share page
+    video_id = douyin_service.extract_video_id(target) or douyin_service.extract_video_id(original_url)
     if video_id:
         try:
             info = douyin_service.share_page_info(video_id)
-            douyin_service.download_direct(info["direct_url"], dest_path)
-            return
-        except Exception as e:
-            share_reason = douyin_service.clean_error(str(e))
+            if info and info.get("direct_url") and not info["direct_url"].startswith("https://www.iesdouyin.com/aweme/v1/play/"):
+                douyin_service.download_direct(info["direct_url"], dest_path)
+                if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024:
+                    return
+        except Exception:
             if os.path.exists(dest_path):
-                os.remove(dest_path)
-    else:
-        share_reason = "ID video tidak ditemukan di link."
-
-    try:
-        _download_with_ytdlp(canonical, dest_path, douyin=True)
-    except Exception as e:
-        raise Exception(
-            "Douyin gagal lewat dua jalur. "
-            f"Halaman share: {share_reason} | "
-            f"yt-dlp: {douyin_service.clean_error(str(e))}"
-        )
+                _safe_remove(dest_path)
 
 
 def _download_with_ytdlp(url, dest_path, douyin=False, resolution="best"):
@@ -160,31 +198,30 @@ def _download_with_ytdlp(url, dest_path, douyin=False, resolution="best"):
         "nocheckcertificate": True,
         "format": _resolution_format(resolution),
         "outtmpl": dest_path,
-        "socket_timeout": 60,
-        "retries": 10,
-        "fragment_retries": 10,
-        # Satu video saja meski tautan membawa parameter playlist.
+        "nopart": True,
+        "socket_timeout": 8 if douyin else 15,
+        "retries": 1 if douyin else 2,
+        "fragment_retries": 1 if douyin else 2,
         "noplaylist": True,
-        # YouTube/Facebook mengirim video sebagai ratusan fragmen; mengunduh
-        # 4 fragmen sekaligus mempercepat tanpa mengubah hasil akhirnya.
-        "concurrent_fragment_downloads": 4,
-        # Hasil gabungan video+audio selalu jadi .mp4 (bukan .mkv).
+        "concurrent_fragment_downloads": 8,
+        "buffersize": 1048576,
+        "http_chunk_size": 10485760,
         "merge_output_format": "mp4",
-        # Lapis pengaman kedua: saat kualitas setara, pilih H.264 + AAC
-        # yang kompatibel dengan semua HP/browser.
         "format_sort": ["vcodec:h264", "acodec:aac"],
     }
 
     temp_cookie = None
+    url_low = url.lower()
     if douyin:
         temp_cookie = douyin_service.apply_douyin_auth(ydl_opts)
-    elif "tiktok.com" in url:
-        temp_cookie = douyin_service.fallback_cookiefile()
-        ydl_opts["cookiefile"] = temp_cookie
-        ydl_opts["http_headers"] = {"User-Agent": douyin_service.DESKTOP_UA}
-    elif any(s in url for s in ("instagram.com", "facebook.com", "twitter.com", "x.com")):
+    elif any(s in url_low for s in ("tiktok.com", "ttwstatic", "byteoversea", "tiktokcdn")):
+        ydl_opts["http_headers"] = {"User-Agent": douyin_service.DESKTOP_UA, "Referer": "https://www.tiktok.com/"}
+    elif any(s in url_low for s in ("xiaohongshu.com", "xhslink.com", "rednote")):
+        ydl_opts["http_headers"] = {"User-Agent": douyin_service.MOBILE_UA, "Referer": "https://www.xiaohongshu.com/"}
+    elif any(s in url_low for s in ("instagram.com", "instagr.am", "facebook.com", "fb.watch", "fb.com", "twitter.com", "x.com", "t.co")):
         ydl_opts["http_headers"] = {"User-Agent": douyin_service.DESKTOP_UA}
 
+    import yt_dlp
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
@@ -194,3 +231,4 @@ def _download_with_ytdlp(url, dest_path, douyin=False, resolution="best"):
                 os.remove(temp_cookie)
             except OSError:
                 pass
+

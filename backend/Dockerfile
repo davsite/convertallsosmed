@@ -17,5 +17,5 @@ COPY . .
 RUN mkdir -p /app/temp_media && chmod 777 /app/temp_media
 
 # HF Spaces memakai port 7860; Render mengisi $PORT sendiri.
-EXPOSE 7860
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-7860}"]
+EXPOSE 8080
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"]

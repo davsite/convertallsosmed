@@ -346,6 +346,15 @@ def get_job_status(job_id: str):
     return StatusResponse(job_id=job_id, status=task_state, progress=0)
 
 
+@app.get("/")
+def root():
+    return {
+        "status": "HEALTHY",
+        "app_name": settings.APP_NAME,
+        "message": "Cuplik Backend API is live and ready."
+    }
+
+
 @app.get("/api/health")
 @app.get("/health")
 def health_check():

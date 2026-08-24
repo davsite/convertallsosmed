@@ -15,5 +15,5 @@ COPY backend/ .
 
 RUN mkdir -p /app/temp_media && chmod 777 /app/temp_media
 
-EXPOSE 7860
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-7860}"]
+EXPOSE 8080
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"]

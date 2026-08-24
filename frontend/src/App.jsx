@@ -243,12 +243,23 @@ export default function App() {
     setState('parsing'); setError(''); setVideoError(false);
     try {
       const r = await fetch(`${API}/api/info`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: url.trim() }),
       });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.detail || 'Tautan gagal dibaca oleh server.');
+      const rawText = await r.text();
+      let j = {};
+      try {
+        j = JSON.parse(rawText);
+      } catch (_) {
+        if (!r.ok) {
+          throw new Error(`Server Backend Error (${r.status}): ${rawText.slice(0, 100)}`);
+        }
+        throw new Error('Respon dari server tidak valid.');
+      }
+      if (!r.ok) throw new Error(j.detail || j.message || 'Tautan gagal dibaca oleh server.');
       const d = j.data;
+      if (!d) throw new Error('Data media tidak ditemukan.');
       const dur = d.duration || 60;
       setVideo({
         title: d.title || 'Video Media',
@@ -849,6 +860,12 @@ function mapNetErr(e) {
   const m = (e && e.message) || String(e);
   if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
     return `Tidak bisa terhubung ke backend server (${API}). Pastikan URL backend benar dan aktif.`;
+  }
+  if (/Video unavailable/i.test(m)) {
+    return 'Video tidak ditemukan, telah dihapus, atau bersifat privat di YouTube.';
+  }
+  if (/Sign in to confirm you're not a bot/i.test(m)) {
+    return 'YouTube meminta verifikasi bot pada server cloud. Coba tautan video lain atau platform lain (TikTok/IG).';
   }
   return m;
 }

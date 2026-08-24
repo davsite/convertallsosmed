@@ -6,11 +6,15 @@ import {
   Clipboard, X, Zap, ChevronRight, Share2, Film, ShieldCheck
 } from 'lucide-react';
 
-const API = (
-  import.meta.env.VITE_API_URL ||
-  (typeof process !== 'undefined' && process.env.REACT_APP_API_URL) ||
-  'https://convertallsosmed-production.up.railway.app'
-).replace(/\/+$/, '');
+const getBackendUrl = () => {
+  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || '';
+  if (envUrl && typeof envUrl === 'string' && !envUrl.includes('vercel.app') && !envUrl.includes('localhost')) {
+    return envUrl.replace(/\/+$/, '');
+  }
+  return 'https://convertallsosmed-production.up.railway.app';
+};
+
+const API = getBackendUrl();
 
 /* ---- 7 Platform Sosial Media ---------------------------------------------- */
 const PLATFORMS = [

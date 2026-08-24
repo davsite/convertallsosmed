@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 
 const API = (
-  (typeof process !== 'undefined' && process?.env?.REACT_APP_API_URL) ||
-  (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_API_URL) ||
+  import.meta.env.VITE_API_URL ||
+  (typeof process !== 'undefined' && process.env.REACT_APP_API_URL) ||
   `${window.location.protocol}//${window.location.hostname}:8000`
 ).replace(/\/+$/, '');
 
@@ -848,7 +848,7 @@ export default function App() {
 function mapNetErr(e) {
   const m = (e && e.message) || String(e);
   if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
-    return 'Tidak bisa terhubung ke backend Cuplik server. Pastikan backend berjalan di port 8000.';
+    return `Tidak bisa terhubung ke backend server (${API}). Pastikan URL backend benar dan aktif.`;
   }
   return m;
 }

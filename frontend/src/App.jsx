@@ -359,23 +359,23 @@ export default function App() {
       <div className="anime-hero-orb" aria-hidden="true" />
 
       {/* Header Aesthetic Anime Modern */}
-      <header className="relative z-10 max-w-5xl mx-auto px-5 pt-8 flex items-center justify-between">
-        <div className="flex items-center gap-3.5">
-          <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 via-purple-600 to-cyan-500 text-white shadow-xl shadow-rose-500/20 border border-white/20 hover:scale-105 transition-transform cursor-pointer">
-            <Scissors size={22} className="rotate-[-10deg]" />
-            <Sparkles size={14} className="absolute -top-1 -right-1 text-amber-300 animate-pulse" />
+      <header className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-5 sm:pt-8 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-rose-500 via-purple-600 to-cyan-500 text-white shadow-xl shadow-rose-500/20 border border-white/20 hover:scale-105 transition-transform cursor-pointer shrink-0">
+            <Scissors size={20} className="rotate-[-10deg]" />
+            <Sparkles size={13} className="absolute -top-1 -right-1 text-amber-300 animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-display text-2xl font-black tracking-tight bg-gradient-to-r from-rose-500 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="font-display text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-rose-500 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
                 Cuplik
               </span>
-              <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 tracking-wider">
-                「 クリップ 」 PRO 3.0
+              <span className="hidden xs:inline-flex px-2 sm:px-2.5 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold uppercase rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 tracking-wider">
+                PRO 3.0
               </span>
             </div>
-            <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">
-              Aesthetic Anime Multi-Platform Video Trimmer
+            <p className="text-[10px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400 tracking-wider truncate">
+              Multi-Platform Video Trimmer
             </p>
           </div>
         </div>
@@ -384,16 +384,16 @@ export default function App() {
         <button
           onClick={() => setTheme(dark ? 'light' : 'dark')}
           aria-label="Ganti tema tampilan"
-          className="p-2.5 px-3.5 rounded-2xl glass-anime-card text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 text-xs font-semibold shadow-sm"
+          className="p-2 sm:p-2.5 px-2.5 sm:px-3.5 rounded-xl sm:rounded-2xl glass-anime-card text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold shadow-sm shrink-0"
         >
           {dark ? (
             <>
-              <Sun size={17} className="text-amber-400 animate-spin-slow" />
+              <Sun size={15} className="text-amber-400 animate-spin-slow" />
               <span className="hidden sm:inline font-mono">Light Mode</span>
             </>
           ) : (
             <>
-              <Moon size={17} className="text-purple-600" />
+              <Moon size={15} className="text-purple-600" />
               <span className="hidden sm:inline font-mono">Dark Mode</span>
             </>
           )}
@@ -401,30 +401,30 @@ export default function App() {
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 max-w-5xl mx-auto px-5 pt-8">
-        <section className="text-center max-w-3xl mx-auto pb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-xs font-mono mb-4 shadow-sm backdrop-blur-md">
-            <Zap size={14} className="text-amber-400" /> 7 Platform Studio Edition · Frame-Accurate
+      <main className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 pt-6 sm:pt-8">
+        <section className="text-center max-w-3xl mx-auto pb-4 sm:pb-6">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-[11px] sm:text-xs font-mono mb-3 sm:mb-4 shadow-sm backdrop-blur-md">
+            <Zap size={13} className="text-amber-400 shrink-0" /> 7 Platform Studio Edition · Frame-Accurate
           </div>
 
-          <h1 className="font-display text-4xl md:text-5xl font-black tracking-tight leading-[1.15]">
+          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.2] px-1">
             Potong & Unduh Video Sosmed{' '}
             <span className="bg-gradient-to-r from-rose-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
               Ultra Presisi
             </span>
           </h1>
-          <p className="mt-3 text-slate-600 dark:text-slate-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+          <p className="mt-2.5 sm:mt-3 text-slate-600 dark:text-slate-300 text-xs sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed px-2">
             Dukungan penuh untuk YouTube, TikTok, Douyin, Instagram, Rednote, Facebook, & X. Ekstraksi instan tanpa watermark.
           </p>
 
           {/* Interactive Hero Input Bar */}
-          <div className="mt-8 relative max-w-2xl mx-auto">
-            <div className="relative flex items-center glass-anime-card rounded-2xl p-1.5 border border-rose-500/25 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/15 transition-all shadow-xl">
-              <span className="pl-3.5 pr-2 shrink-0">
+          <div className="mt-6 sm:mt-8 relative max-w-2xl mx-auto">
+            <div className="relative flex items-center glass-anime-card rounded-xl sm:rounded-2xl p-1 sm:p-1.5 border border-rose-500/25 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/15 transition-all shadow-xl">
+              <span className="pl-2.5 sm:pl-3.5 pr-1 sm:pr-2 shrink-0">
                 {active ? (
-                  <img src={active.logo} className="w-6 h-6 rounded-md object-cover shadow-sm animate-pulse" alt={active.name} />
+                  <img src={active.logo} className="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-cover shadow-sm animate-pulse" alt={active.name} />
                 ) : (
-                  <Search size={20} className="text-slate-400 dark:text-slate-500" />
+                  <Search size={18} className="text-slate-400 dark:text-slate-500" />
                 )}
               </span>
 
@@ -432,44 +432,44 @@ export default function App() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && fetchInfo()}
-                placeholder="Tempel tautan video (Instagram, TikTok, YouTube, Douyin, Rednote...)"
-                className="w-full py-3.5 px-2 text-sm font-medium bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none"
+                placeholder="Tempel tautan video (YouTube, TikTok, IG, Douyin, FB, X...)"
+                className="w-full py-2.5 sm:py-3.5 px-1 sm:px-2 text-xs sm:text-sm font-medium bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none min-w-0"
               />
 
               {/* Quick Clear or Paste Buttons */}
-              <div className="flex items-center gap-1.5 pr-1 shrink-0">
+              <div className="flex items-center gap-1 sm:gap-1.5 pr-1 shrink-0">
                 {url ? (
                   <button
                     onClick={() => { setUrl(''); setState('idle'); }}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
                     title="Hapus tautan"
                   >
-                    <X size={16} />
+                    <X size={15} />
                   </button>
                 ) : (
                   <button
                     onClick={handlePaste}
-                    className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-mono font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition"
+                    className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg sm:rounded-xl text-xs font-mono font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition"
                     title="Tempel dari Clipboard"
                   >
-                    <Clipboard size={14} /> Tempel
+                    <Clipboard size={13} /> Tempel
                   </button>
                 )}
 
                 <button
                   onClick={fetchInfo}
                   disabled={state === 'parsing' || !url.trim()}
-                  className="btn-anime-gradient px-5 py-2.5 rounded-xl font-bold text-sm text-white shadow-md shadow-rose-500/25 transition-all disabled:opacity-40 flex items-center gap-1.5 active:scale-95"
+                  className="btn-anime-gradient px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm text-white shadow-md shadow-rose-500/25 transition-all disabled:opacity-40 flex items-center gap-1 sm:gap-1.5 active:scale-95 shrink-0"
                 >
                   {state === 'parsing' ? (
                     <>
-                      <Loader2 className="animate-spin text-white" size={16} />
-                      <span className="font-mono text-xs">Memproses</span>
+                      <Loader2 className="animate-spin text-white" size={15} />
+                      <span className="font-mono text-[11px] sm:text-xs">Memproses</span>
                     </>
                   ) : (
                     <>
                       <span>Ambil</span>
-                      <Play size={14} className="fill-current" />
+                      <Play size={13} className="fill-current" />
                     </>
                   )}
                 </button>
@@ -477,13 +477,13 @@ export default function App() {
             </div>
 
             {/* 7 Platform Badges with Japanese Subtitles */}
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <div className="mt-3.5 sm:mt-4 flex flex-wrap justify-center gap-1.5 sm:gap-2 px-1">
               {PLATFORMS.map((p) => {
                 const on = active?.key === p.key;
                 return (
                   <div
                     key={p.key}
-                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border backdrop-blur-md transition-all duration-200 ${
+                    className={`inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border backdrop-blur-md transition-all duration-200 ${
                       on
                         ? `${p.badgeClass} ring-2 ring-rose-500/60 scale-105 shadow-md`
                         : 'bg-white/60 dark:bg-slate-900/60 border-slate-200/70 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-rose-400/40'
@@ -491,7 +491,7 @@ export default function App() {
                   >
                     <img src={p.logo} className="w-3.5 h-3.5 rounded-sm object-cover" alt={p.name} />
                     <span>{p.name}</span>
-                    <span className="text-[9px] opacity-60 font-mono">({p.jpName})</span>
+                    <span className="hidden xs:inline text-[9px] opacity-60 font-mono">({p.jpName})</span>
                   </div>
                 );
               })}
@@ -501,44 +501,44 @@ export default function App() {
 
         {/* Error Alert Box */}
         {state === 'error' && (
-          <div className="anim-fade-up max-w-2xl mx-auto mb-8 flex items-start gap-3.5 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4.5 text-sm text-rose-700 dark:text-rose-300 backdrop-blur-xl shadow-lg">
-            <AlertCircle size={20} className="shrink-0 mt-0.5 text-rose-500" />
+          <div className="anim-fade-up max-w-2xl mx-auto mb-6 sm:mb-8 flex items-start gap-3 rounded-xl sm:rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3.5 sm:p-4.5 text-xs sm:text-sm text-rose-700 dark:text-rose-300 backdrop-blur-xl shadow-lg">
+            <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-500" />
             <div className="min-w-0">
               <p className="font-bold text-rose-600 dark:text-rose-400">Gagal Mengambil Video</p>
-              <p className="mt-0.5 break-words text-xs leading-relaxed opacity-90">{error}</p>
+              <p className="mt-0.5 break-words leading-relaxed opacity-90">{error}</p>
             </div>
           </div>
         )}
 
         {/* Workspace Preview & Trimming Controls */}
         {(state === 'preview' || busy) && (
-          <section className="anim-fade-up grid lg:grid-cols-5 gap-6 max-w-5xl mx-auto">
+          <section className="anim-fade-up grid lg:grid-cols-5 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {/* Player Column */}
-            <div className="lg:col-span-3 space-y-4">
-              <div className={`glass-anime-card rounded-2xl overflow-hidden relative bg-black shadow-2xl transition-all duration-300 ${isVertical ? 'max-w-xs md:max-w-sm mx-auto' : 'w-full'}`}>
+            <div className="lg:col-span-3 space-y-3.5 sm:space-y-4">
+              <div className={`glass-anime-card rounded-xl sm:rounded-2xl overflow-hidden relative bg-black shadow-2xl transition-all duration-300 ${isVertical ? 'max-w-[270px] sm:max-w-xs md:max-w-sm mx-auto' : 'w-full'}`}>
                 {/* Header status bar */}
-                <div className="px-4 py-2 bg-slate-900/90 border-b border-white/10 flex items-center justify-between text-xs font-mono text-slate-300">
-                  <span className="flex items-center gap-2">
+                <div className="px-3.5 sm:px-4 py-2 bg-slate-900/90 border-b border-white/10 flex items-center justify-between text-[11px] sm:text-xs font-mono text-slate-300">
+                  <span className="flex items-center gap-1.5 sm:gap-2">
                     <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                    「 プレビュー 」 LIVE PREVIEW
+                    LIVE PREVIEW
                   </span>
                   {active && <span className="font-semibold text-cyan-400">{active.name}</span>}
                 </div>
 
                 {videoError ? (
-                  <div className="p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[260px]">
-                    <AlertCircle size={38} className="text-rose-400 animate-bounce" />
-                    <p className="text-sm font-semibold text-slate-100">
+                  <div className="p-6 sm:p-8 text-center space-y-2.5 sm:space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[260px]">
+                    <AlertCircle size={32} className="text-rose-400 animate-bounce" />
+                    <p className="text-xs sm:text-sm font-semibold text-slate-100">
                       Stream preview langsung dibatasi oleh protokol keamanan CDN.
                     </p>
-                    <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-slate-400 max-w-xs leading-relaxed">
                       Anda tetap dapat memotong dan mengunduh video ini secara frame-accurate via server!
                     </p>
                     <button
                       onClick={fetchInfo}
-                      className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition"
+                      className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition"
                     >
-                      <RefreshCw size={14} /> Coba Muat Ulang
+                      <RefreshCw size={13} /> Coba Muat Ulang
                     </button>
                   </div>
                 ) : (
@@ -582,31 +582,31 @@ export default function App() {
                       setNow(e.target.currentTime);
                     }}
                     onError={() => setVideoError(true)}
-                    className={`w-full bg-black object-contain transition-all duration-300 ${isVertical ? 'max-h-[65vh] mx-auto' : 'max-h-[58vh]'}`}
+                    className={`w-full bg-black object-contain transition-all duration-300 ${isVertical ? 'max-h-[46vh] sm:max-h-[56vh] mx-auto' : 'max-h-[38vh] sm:max-h-[48vh] lg:max-h-[56vh]'}`}
                   />
                 )}
               </div>
 
               {/* Title & Metadata Card */}
-              <div className="glass-anime-card p-4 rounded-2xl flex items-start gap-3.5">
+              <div className="glass-anime-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-start gap-3 sm:gap-3.5">
                 {active && (
-                  <span className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 shrink-0">
-                    <img src={active.logo} className="w-5 h-5 rounded-md object-cover shadow-sm" alt={active.name} />
+                  <span className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-rose-500/10 border border-rose-500/20 shrink-0">
+                    <img src={active.logo} className="w-4 h-4 sm:w-5 sm:h-5 rounded-md object-cover shadow-sm" alt={active.name} />
                   </span>
                 )}
                 <div className="min-w-0">
-                  <h2 className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-base leading-snug break-words line-clamp-2">
+                  <h2 className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm md:text-base leading-snug break-words line-clamp-2">
                     {video.title}
                   </h2>
-                  <div className="mt-2.5 flex flex-wrap items-center gap-3.5 text-xs font-mono text-slate-500 dark:text-slate-400">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Clock size={14} className="text-rose-500" /> Total: {fmt(video.duration)}
+                  <div className="mt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5 text-[11px] sm:text-xs font-mono text-slate-500 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock size={13} className="text-rose-500" /> Total: {fmt(video.duration)}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold">
-                      <Scissors size={14} /> Potongan: {fmt(clipLen)}
+                    <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold">
+                      <Scissors size={13} /> Potongan: {fmt(clipLen)}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 font-semibold">
-                      <Film size={14} /> Est. Size: ~{estSizeMb} MB
+                    <span className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold">
+                      <Film size={13} /> ~{estSizeMb} MB
                     </span>
                   </div>
                 </div>
@@ -614,14 +614,14 @@ export default function App() {
             </div>
 
             {/* Trimmer Controls Column */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-3.5 sm:space-y-4">
               {/* Card Trimmer */}
-              <div className="glass-anime-card p-5 rounded-2xl space-y-4">
+              <div className="glass-anime-card p-4 sm:p-5 rounded-xl sm:rounded-2xl space-y-3.5 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                    <Scissors size={14} /> 「 トリム 」 RENTANG POTONG
+                  <span className="text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <Scissors size={13} /> RENTANG POTONG
                   </span>
-                  <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <span className="text-[11px] sm:text-xs font-mono font-bold px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                     {fmt(clipLen)}
                   </span>
                 </div>
@@ -633,7 +633,7 @@ export default function App() {
                   onPointerMove={moveDrag}
                   onPointerUp={endDrag}
                   onPointerCancel={endDrag}
-                  className="filmstrip-track relative h-20 rounded-xl border border-slate-300 dark:border-white/15 overflow-hidden cursor-pointer bg-slate-100 dark:bg-[#0A0E1A] shadow-inner"
+                  className="filmstrip-track relative h-16 sm:h-20 rounded-lg sm:rounded-xl border border-slate-300 dark:border-white/15 overflow-hidden cursor-pointer bg-slate-100 dark:bg-[#0A0E1A] shadow-inner"
                   style={{ touchAction: 'none' }}
                 >
                   {/* Selected Region */}
@@ -658,10 +658,10 @@ export default function App() {
                       if (e.key === 'ArrowLeft') nudge('start', -1);
                       if (e.key === 'ArrowRight') nudge('start', 1);
                     }}
-                    className="absolute top-0 bottom-0 w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-20"
+                    className="absolute top-0 bottom-0 w-9 sm:w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-20 cursor-ew-resize"
                     style={{ left: `${pct(start)}%` }}
                   >
-                    <span className="w-3.5 h-12 rounded-full bg-gradient-to-b from-rose-400 to-rose-600 border-2 border-white shadow-lg group-hover:scale-110 transition-transform" />
+                    <span className="w-3 sm:w-3.5 h-10 sm:h-12 rounded-full bg-gradient-to-b from-rose-400 to-rose-600 border-2 border-white shadow-lg group-hover:scale-110 active:scale-115 transition-transform" />
                   </div>
                   {/* End Handle */}
                   <div
@@ -675,59 +675,59 @@ export default function App() {
                       if (e.key === 'ArrowLeft') nudge('end', -1);
                       if (e.key === 'ArrowRight') nudge('end', 1);
                     }}
-                    className="absolute top-0 bottom-0 w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-20"
+                    className="absolute top-0 bottom-0 w-9 sm:w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-20 cursor-ew-resize"
                     style={{ left: `${pct(end)}%` }}
                   >
-                    <span className="w-3.5 h-12 rounded-full bg-gradient-to-b from-cyan-400 to-purple-600 border-2 border-white shadow-lg group-hover:scale-110 transition-transform" />
+                    <span className="w-3 sm:w-3.5 h-10 sm:h-12 rounded-full bg-gradient-to-b from-cyan-400 to-purple-600 border-2 border-white shadow-lg group-hover:scale-110 active:scale-115 transition-transform" />
                   </div>
                 </div>
 
                 {/* Display Mulai - Selesai Cards */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl p-3">
-                    <div className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400">Mulai (Start)</div>
-                    <div className="font-mono text-xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">{fmtPrecise(start)}</div>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-lg sm:rounded-xl p-2.5 sm:p-3 min-w-0">
+                    <div className="text-[9px] sm:text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 truncate">Mulai (Start)</div>
+                    <div className="font-mono text-base sm:text-xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">{fmtPrecise(start)}</div>
                     {/* Micro nudge buttons */}
-                    <div className="flex gap-1 mt-2">
-                      <button onClick={() => nudge('start', -1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition">-1s</button>
-                      <button onClick={() => nudge('start', -0.1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition">-0.1s</button>
-                      <button onClick={() => nudge('start', 0.1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition">+0.1s</button>
-                      <button onClick={() => nudge('start', 1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition">+1s</button>
+                    <div className="grid grid-cols-4 gap-0.5 sm:gap-1 mt-1.5 sm:mt-2">
+                      <button onClick={() => nudge('start', -1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">-1s</button>
+                      <button onClick={() => nudge('start', -0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">-.1</button>
+                      <button onClick={() => nudge('start', 0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">+.1</button>
+                      <button onClick={() => nudge('start', 1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">+1s</button>
                     </div>
                   </div>
 
-                  <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl p-3">
-                    <div className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400">Selesai (End)</div>
-                    <div className="font-mono text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">{fmtPrecise(end)}</div>
+                  <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-lg sm:rounded-xl p-2.5 sm:p-3 min-w-0">
+                    <div className="text-[9px] sm:text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 truncate">Selesai (End)</div>
+                    <div className="font-mono text-base sm:text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">{fmtPrecise(end)}</div>
                     {/* Micro nudge buttons */}
-                    <div className="flex gap-1 mt-2">
-                      <button onClick={() => nudge('end', -1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition">-1s</button>
-                      <button onClick={() => nudge('end', -0.1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition">-0.1s</button>
-                      <button onClick={() => nudge('end', 0.1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition">+0.1s</button>
-                      <button onClick={() => nudge('end', 1)} className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition">+1s</button>
+                    <div className="grid grid-cols-4 gap-0.5 sm:gap-1 mt-1.5 sm:mt-2">
+                      <button onClick={() => nudge('end', -1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">-1s</button>
+                      <button onClick={() => nudge('end', -0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">-.1</button>
+                      <button onClick={() => nudge('end', 0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">+.1</button>
+                      <button onClick={() => nudge('end', 1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">+1s</button>
                     </div>
                   </div>
                 </div>
 
                 {/* Mark Now Buttons */}
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                   <button
                     onClick={markStart}
-                    className="text-xs font-semibold rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 py-2 hover:bg-rose-500/20 transition"
+                    className="text-[11px] sm:text-xs font-semibold rounded-lg sm:rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 py-2 px-1 text-center truncate hover:bg-rose-500/20 transition"
                   >
-                    Tandai Mulai [ {fmt(now)} ]
+                    Tandai Mulai [{fmt(now)}]
                   </button>
                   <button
                     onClick={markEnd}
-                    className="text-xs font-semibold rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 py-2 hover:bg-cyan-500/20 transition"
+                    className="text-[11px] sm:text-xs font-semibold rounded-lg sm:rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 py-2 px-1 text-center truncate hover:bg-cyan-500/20 transition"
                   >
-                    Tandai Selesai [ {fmt(now)} ]
+                    Tandai Selesai [{fmt(now)}]
                   </button>
                 </div>
 
                 {/* Quick Presets */}
-                <div className="flex items-center gap-1.5 pt-1">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase">Preset:</span>
+                <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap pt-0.5 sm:pt-1">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-slate-400 uppercase">Preset:</span>
                   {[
                     { label: '15s', sec: 15 },
                     { label: '30s', sec: 30 },
@@ -736,26 +736,26 @@ export default function App() {
                     <button
                       key={p.label}
                       onClick={() => setPreset(p.sec)}
-                      className="px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-slate-200/60 dark:bg-slate-800/60 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 transition"
+                      className="px-2 sm:px-2.5 py-1 text-[10px] sm:text-xs font-mono font-medium rounded-md sm:rounded-lg bg-slate-200/60 dark:bg-slate-800/60 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 transition"
                     >
                       {p.label}
                     </button>
                   ))}
                   <button
                     onClick={resetTrim}
-                    className="ml-auto px-2.5 py-1 text-xs font-mono text-slate-400 hover:text-rose-500 transition"
+                    className="ml-auto px-2 py-1 text-[10px] sm:text-xs font-mono text-slate-400 hover:text-rose-500 transition"
                   >
-                    Reset Penuh
+                    Reset
                   </button>
                 </div>
               </div>
 
               {/* Format & Resolusi Selector */}
-              <div className="glass-anime-card p-5 rounded-2xl space-y-4">
-                <span className="block text-xs font-mono font-bold uppercase text-rose-600 dark:text-rose-400">
-                  「 フォーマット 」 FORMAT KELUARAN
+              <div className="glass-anime-card p-4 sm:p-5 rounded-xl sm:rounded-2xl space-y-3.5 sm:space-y-4">
+                <span className="block text-[11px] sm:text-xs font-mono font-bold uppercase text-rose-600 dark:text-rose-400">
+                  FORMAT KELUARAN
                 </span>
-                <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-white/10">
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 bg-slate-100 dark:bg-slate-900/90 p-1 sm:p-1.5 rounded-lg sm:rounded-xl border border-slate-200 dark:border-white/10">
                   {[
                     { v: 'mp4', label: 'MP4 Video', Icon: Tv },
                     { v: 'mp3', label: 'MP3 Audio (320k)', Icon: Volume2 },
@@ -763,26 +763,26 @@ export default function App() {
                     <button
                       key={f.v}
                       onClick={() => setFormat(f.v)}
-                      className={`flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold transition-all ${
+                      className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-all ${
                         format === f.v
                           ? 'btn-anime-gradient text-white shadow-md'
                           : 'text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400'
                       }`}
                     >
-                      <f.Icon size={16} /> {f.label}
+                      <f.Icon size={15} /> {f.label}
                     </button>
                   ))}
                 </div>
 
                 <div>
-                  <span className="block text-xs font-mono font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                  <span className="block text-[10px] sm:text-xs font-mono font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
                     Resolusi Video (7 Platform)
                   </span>
                   <select
                     value={resolution}
                     onChange={(e) => setResolution(e.target.value)}
                     disabled={format !== 'mp4'}
-                    className="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/15 px-3.5 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500/40 disabled:opacity-40 shadow-sm"
+                    className="w-full rounded-lg sm:rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/15 px-3 py-2 sm:py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500/40 disabled:opacity-40 shadow-sm cursor-pointer"
                   >
                     {resOptions.map((o) => (
                       <option key={o.value} value={o.value}>
@@ -795,30 +795,30 @@ export default function App() {
 
               {/* Progress Bar Kontinu (0% -> 100%) */}
               {busy && (
-                <div className="glass-anime-card p-4 rounded-2xl border border-rose-500/30 bg-rose-500/5 space-y-3">
+                <div className="glass-anime-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-rose-500/30 bg-rose-500/5 space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between text-xs font-mono font-bold text-rose-600 dark:text-rose-400">
-                    <span className="inline-flex items-center gap-1.5 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">
-                      <Clock size={14} className="text-amber-400 animate-spin-slow" /> Sisa: {fmtEstRemaining(elapsedMs, clipLen)}
+                    <span className="inline-flex items-center gap-1.5 bg-rose-500/10 px-2 sm:px-2.5 py-1 rounded-md sm:rounded-lg border border-rose-500/20 text-[11px] sm:text-xs">
+                      <Clock size={13} className="text-amber-400 animate-spin-slow" /> Sisa: {fmtEstRemaining(elapsedMs, clipLen)}
                     </span>
-                    <span className="font-mono text-cyan-500 dark:text-cyan-400 font-extrabold text-sm">{displayPct}%</span>
+                    <span className="font-mono text-cyan-500 dark:text-cyan-400 font-extrabold text-xs sm:text-sm">{displayPct}%</span>
                   </div>
 
                   <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
-                    <span className="inline-flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
                       {state === 'processing' ? (
                         <>
-                          <Loader2 className="animate-spin text-rose-500" size={15} /> Memotong klip di server FFmpeg… ({displayPct}%)
+                          <Loader2 className="animate-spin text-rose-500 shrink-0" size={14} /> Memotong klip di server FFmpeg… ({displayPct}%)
                         </>
                       ) : (
                         <>
-                          <Download size={15} className="text-cyan-400 animate-bounce" /> Mengunduh file media… {humanBytes(prog?.loaded || 0)}
+                          <Download size={14} className="text-cyan-400 animate-bounce shrink-0" /> Mengunduh file… {humanBytes(prog?.loaded || 0)}
                         </>
                       )}
                     </span>
                   </div>
 
                   {/* Visual Progress Bar Smooth */}
-                  <div className="h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-900 border border-rose-500/20 p-0.5 shadow-inner">
+                  <div className="h-2.5 sm:h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-900 border border-rose-500/20 p-0.5 shadow-inner">
                     <div
                       className="h-full bg-gradient-to-r from-rose-500 via-purple-500 to-cyan-400 transition-all duration-300 rounded-full shadow-md"
                       style={{ width: `${displayPct}%` }}
@@ -831,17 +831,17 @@ export default function App() {
               <button
                 onClick={download}
                 disabled={busy}
-                className="w-full py-4 rounded-2xl font-extrabold text-sm tracking-wide btn-anime-gradient text-white shadow-xl shadow-rose-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-extrabold text-xs sm:text-sm tracking-wide btn-anime-gradient text-white shadow-xl shadow-rose-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {busy ? (
                   <>
-                    <Loader2 className="animate-spin text-white" size={18} />
-                    {state === 'downloading' ? 'Mentransfer File ke Perangkat…' : 'Sedang Memotong Media…'}
+                    <Loader2 className="animate-spin text-white" size={17} />
+                    <span>{state === 'downloading' ? 'Mentransfer File ke Perangkat…' : 'Sedang Memotong Media…'}</span>
                   </>
                 ) : (
                   <>
-                    <Download size={18} />
-                    <span>「 保存 」 UNDUH {format.toUpperCase()} ({fmt(clipLen)})</span>
+                    <Download size={17} />
+                    <span>UNDUH {format.toUpperCase()} ({fmt(clipLen)})</span>
                   </>
                 )}
               </button>

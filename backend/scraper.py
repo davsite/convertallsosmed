@@ -357,126 +357,173 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
     """Ekstraksi metadata & direct media URL menggunakan yt-dlp."""
     import yt_dlp
 
-    ydl_opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "nocheckcertificate": True,
-        "noplaylist": True,
-        "skip_download": True,
-        "socket_timeout": 15,
-        "retries": 2,
-        "check_formats": False,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android", "ios", "mweb"]
-            }
-        }
-    }
-
-    if custom_headers:
-        ydl_opts["http_headers"] = custom_headers
+    is_yt = "youtube.com" in url.lower() or "youtu.be" in url.lower()
+    client_strategies = (
+        [
+            ["android_embedded", "tv_embedded", "web_creator", "tv", "android"],
+            ["all"],
+            ["android", "ios", "mweb"]
+        ]
+        if is_yt
+        else [None]
+    )
 
     cookie_path = os.path.join(os.path.dirname(__file__), "cookies.txt")
-    if os.path.exists(cookie_path):
-        ydl_opts["cookiefile"] = cookie_path
+    if not os.path.exists(cookie_path):
+        root_cookie = os.path.join(os.path.dirname(os.path.dirname(__file__)), "cookies.txt")
+        if os.path.exists(root_cookie):
+            cookie_path = root_cookie
 
-    if settings.PROXIES:
-        p_url = random.choice(settings.PROXIES)
-        ydl_opts["proxy"] = p_url
+    last_error = None
+    info = None
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        formats = info.get("formats", [])
+    for clients in client_strategies:
+        ydl_opts = {
+            "quiet": True,
+            "no_warnings": True,
+            "nocheckcertificate": True,
+            "noplaylist": True,
+            "skip_download": True,
+            "socket_timeout": 15,
+            "retries": 3,
+            "check_formats": False,
+        }
 
-        stream_url = None
-        chosen = None
+        if clients:
+            ydl_opts["extractor_args"] = {
+                "youtube": {
+                    "player_client": clients
+                }
+            }
 
-        # Prioritas 1: Format MP4 yang menggabungkan Video + Audio secara eksplisit
-        cands_combined = [
-            f for f in formats
-            if f.get("ext") == "mp4"
-            and f.get("vcodec") not in (None, "none")
-            and f.get("acodec") not in (None, "none")
-            and f.get("url")
-        ]
-        if cands_combined:
-            cands_combined.sort(key=lambda x: int(x.get("height") or 0))
-            chosen = cands_combined[-1]
-            stream_url = chosen.get("url")
+        if custom_headers:
+            ydl_opts["http_headers"] = custom_headers
 
-        # Prioritas 2: Progressive MP4 (seperti format Instagram reels 1, 2, 3)
-        if not stream_url:
-            cands_prog = [
-                f for f in formats
-                if f.get("ext") == "mp4"
-                and f.get("acodec") != "none"
-                and not str(f.get("format_id", "")).startswith("dash-")
-                and f.get("url")
-            ]
-            if cands_prog:
-                chosen = cands_prog[-1]
-                stream_url = chosen.get("url")
+        if os.path.exists(cookie_path):
+            ydl_opts["cookiefile"] = cookie_path
 
-        # Prioritas 3: Format video apapun yang ada URL-nya
-        if not stream_url:
-            cands_any = [
-                f for f in formats
-                if f.get("vcodec") not in (None, "none")
-                and f.get("url")
-            ]
-            if cands_any:
-                cands_any.sort(key=lambda x: int(x.get("height") or 0))
-                chosen = cands_any[-1]
-                stream_url = chosen.get("url")
-
-        # Prioritas 4: URL bawaan info jika tersedia
-        final_url = stream_url or info.get("url")
-        if not final_url and formats:
-            for f in reversed(formats):
-                if f.get("url"):
-                    chosen = f
-                    final_url = f.get("url")
-                    break
-
-        if not final_url:
-            raise Exception("yt-dlp tidak dapat menemukan URL stream video yang valid.")
-
-        stream_headers = {}
-        if chosen and isinstance(chosen.get("http_headers"), dict):
-            stream_headers.update(chosen["http_headers"])
-        elif custom_headers:
-            stream_headers.update(custom_headers)
-        else:
-            stream_headers = {"User-Agent": DESKTOP_UA, "Referer": url}
-
-        dur = info.get("duration")
-        duration = int(dur) if dur and dur > 0 else 0
-        if not duration and final_url:
-            import subprocess
+        # Dukungan cookie via Environment Variable YOUTUBE_COOKIES
+        cookies_env = os.environ.get("YOUTUBE_COOKIES", "").strip()
+        if cookies_env and not os.path.exists(cookie_path):
             try:
-                probe_cmd = [
-                    "ffprobe", "-v", "error",
-                    "-show_entries", "format=duration",
-                    "-of", "default=noprint_wrappers=1:nokey=1",
-                    final_url
-                ]
-                res = subprocess.run(probe_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=3)
-                if res.returncode == 0 and res.stdout.strip():
-                    duration = int(float(res.stdout.strip()))
+                temp_cookie = os.path.join(os.path.dirname(__file__), "env_cookies.txt")
+                with open(temp_cookie, "w", encoding="utf-8") as cf:
+                    cf.write(cookies_env)
+                ydl_opts["cookiefile"] = temp_cookie
             except Exception:
                 pass
 
-        if not duration or duration <= 0:
-            duration = 60
+        if settings.PROXIES:
+            p_url = random.choice(settings.PROXIES)
+            ydl_opts["proxy"] = p_url
 
-        return {
-            "title": info.get("title") or "Social Media Video",
-            "thumbnail": info.get("thumbnail"),
-            "duration": duration,
-            "direct_url": final_url,
-            "qualities": _quality_ladder(formats),
-            "stream_headers": stream_headers
-        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                if info:
+                    break
+        except Exception as e:
+            last_error = e
+            if not is_yt:
+                raise e
+            logger.warning(f"YouTube extractor strategy {clients} failed: {e}. Trying fallback...")
+            continue
+    else:
+        if last_error:
+            raise last_error
+        raise Exception("Gagal mengekstrak media.")
+
+    formats = info.get("formats", [])
+
+    stream_url = None
+    chosen = None
+
+    # Prioritas 1: Format MP4 yang menggabungkan Video + Audio secara eksplisit
+    cands_combined = [
+        f for f in formats
+        if f.get("ext") == "mp4"
+        and f.get("vcodec") not in (None, "none")
+        and f.get("acodec") not in (None, "none")
+        and f.get("url")
+    ]
+    if cands_combined:
+        cands_combined.sort(key=lambda x: int(x.get("height") or 0))
+        chosen = cands_combined[-1]
+        stream_url = chosen.get("url")
+
+    # Prioritas 2: Progressive MP4 (seperti format Instagram reels 1, 2, 3)
+    if not stream_url:
+        cands_prog = [
+            f for f in formats
+            if f.get("ext") == "mp4"
+            and f.get("acodec") != "none"
+            and not str(f.get("format_id", "")).startswith("dash-")
+            and f.get("url")
+        ]
+        if cands_prog:
+            chosen = cands_prog[-1]
+            stream_url = chosen.get("url")
+
+    # Prioritas 3: Format video apapun yang ada URL-nya
+    if not stream_url:
+        cands_any = [
+            f for f in formats
+            if f.get("vcodec") not in (None, "none")
+            and f.get("url")
+        ]
+        if cands_any:
+            cands_any.sort(key=lambda x: int(x.get("height") or 0))
+            chosen = cands_any[-1]
+            stream_url = chosen.get("url")
+
+    # Prioritas 4: URL bawaan info jika tersedia
+    final_url = stream_url or info.get("url")
+    if not final_url and formats:
+        for f in reversed(formats):
+            if f.get("url"):
+                chosen = f
+                final_url = f.get("url")
+                break
+
+    if not final_url:
+        raise Exception("yt-dlp tidak dapat menemukan URL stream video yang valid.")
+
+    stream_headers = {}
+    if chosen and isinstance(chosen.get("http_headers"), dict):
+        stream_headers.update(chosen["http_headers"])
+    elif custom_headers:
+        stream_headers.update(custom_headers)
+    else:
+        stream_headers = {"User-Agent": DESKTOP_UA, "Referer": url}
+
+    dur = info.get("duration")
+    duration = int(dur) if dur and dur > 0 else 0
+    if not duration and final_url:
+        import subprocess
+        try:
+            probe_cmd = [
+                "ffprobe", "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                final_url
+            ]
+            res = subprocess.run(probe_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=3)
+            if res.returncode == 0 and res.stdout.strip():
+                duration = int(float(res.stdout.strip()))
+        except Exception:
+            pass
+
+    if not duration or duration <= 0:
+        duration = 60
+
+    return {
+        "title": info.get("title") or "Social Media Video",
+        "thumbnail": info.get("thumbnail"),
+        "duration": duration,
+        "direct_url": final_url,
+        "qualities": _quality_ladder(formats),
+        "stream_headers": stream_headers
+    }
 
 
 # ============================================================================

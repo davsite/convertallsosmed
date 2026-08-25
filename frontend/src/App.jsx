@@ -496,6 +496,16 @@ export default function App() {
                 );
               })}
             </div>
+
+            {/* Top Responsive Ad Placement */}
+            <div className="mt-6">
+              <div className="hidden md:block">
+                <AdBanner728 />
+              </div>
+              <div className="block md:hidden">
+                <AdBanner300 />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -845,9 +855,19 @@ export default function App() {
                   </>
                 )}
               </button>
+
+              {/* Sidebar 300x250 Ad */}
+              <div className="pt-2">
+                <AdBanner300 />
+              </div>
             </div>
           </section>
         )}
+
+        {/* Native Ad Placement at the Bottom */}
+        <div className="mt-8">
+          <AdNativeBanner />
+        </div>
       </main>
 
       {/* Toast Notification */}
@@ -872,5 +892,123 @@ function mapNetErr(e) {
     return 'YouTube meminta verifikasi bot pada server cloud. Coba tautan video lain atau platform lain (TikTok/IG).';
   }
   return m;
+}
+
+/* ---- Adsterra Monetization Components -------------------------------------- */
+
+function AdBanner728() {
+  const adRef = useRef(null);
+
+  useEffect(() => {
+    const el = adRef.current;
+    if (!el || el.children.length > 0) return;
+
+    try {
+      const confScript = document.createElement('script');
+      confScript.type = 'text/javascript';
+      confScript.innerHTML = `
+        atOptions = {
+          'key' : '37bfff0b33828fb26595d61a7e75f2c4',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      `;
+
+      const invokeScript = document.createElement('script');
+      invokeScript.type = 'text/javascript';
+      invokeScript.src = 'https://www.highrevenueformat.com/37bfff0b33828fb26595d61a7e75f2c4/invoke.js';
+
+      el.appendChild(confScript);
+      el.appendChild(invokeScript);
+    } catch (_) {}
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center my-3 overflow-hidden">
+      <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
+        Sponsored Advertisement
+      </span>
+      <div
+        ref={adRef}
+        className="min-h-[90px] w-[728px] max-w-full overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5"
+      />
+    </div>
+  );
+}
+
+function AdBanner300() {
+  const adRef = useRef(null);
+
+  useEffect(() => {
+    const el = adRef.current;
+    if (!el || el.children.length > 0) return;
+
+    try {
+      const confScript = document.createElement('script');
+      confScript.type = 'text/javascript';
+      confScript.innerHTML = `
+        atOptions = {
+          'key' : 'd9361be5c0aab62c2c81652f4e02b601',
+          'format' : 'iframe',
+          'height' : 250,
+          'width' : 300,
+          'params' : {}
+        };
+      `;
+
+      const invokeScript = document.createElement('script');
+      invokeScript.type = 'text/javascript';
+      invokeScript.src = 'https://www.highrevenueformat.com/d9361be5c0aab62c2c81652f4e02b601/invoke.js';
+
+      el.appendChild(confScript);
+      el.appendChild(invokeScript);
+    } catch (_) {}
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center my-2.5 overflow-hidden">
+      <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
+        Sponsored Advertisement
+      </span>
+      <div
+        ref={adRef}
+        className="min-h-[250px] w-[300px] overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5"
+      />
+    </div>
+  );
+}
+
+function AdNativeBanner() {
+  const adRef = useRef(null);
+
+  useEffect(() => {
+    const el = adRef.current;
+    if (!el || el.querySelector('script')) return;
+
+    try {
+      const invokeScript = document.createElement('script');
+      invokeScript.async = true;
+      invokeScript.setAttribute('data-cfasync', 'false');
+      invokeScript.src = 'https://pl31025851.profitableratecpmnetwork.com/b52019ce5352c5da703df76d0a336b9a/invoke.js';
+
+      el.appendChild(invokeScript);
+    } catch (_) {}
+  }, []);
+
+  return (
+    <div className="w-full max-w-4xl mx-auto my-4 px-2" ref={adRef}>
+      <div className="flex items-center justify-center mb-1">
+        <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+          Sponsored Content
+        </span>
+      </div>
+      <div
+        id="container-b52019ce5352c5da703df76d0a336b9a"
+        className="min-h-[60px] rounded-xl overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-900/30 border border-slate-200 dark:border-white/5"
+      />
+    </div>
+  );
 }
 

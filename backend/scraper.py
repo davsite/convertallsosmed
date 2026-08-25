@@ -216,36 +216,64 @@ def _extract_douyin_share_page(video_id: str) -> Optional[Dict[str, Any]]:
 # ============================================================================
 
 def _extract_rednote_html(raw_url: str) -> Optional[Dict[str, Any]]:
-    """Mengekstrak data media Xiaohongshu langsung dari SSR HTML State."""
-    try:
-        headers = {
+    """Mengekstrak data media Xiaohongshu langsung dari SSR HTML State dan direct stream CDN."""
+    headers_list = [
+        {
+            "User-Agent": DESKTOP_UA,
+            "Referer": "https://www.xiaohongshu.com/",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+        },
+        {
             "User-Agent": MOBILE_UA,
             "Referer": "https://www.xiaohongshu.com/",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         }
-        resp = requests.get(raw_url, headers=headers, timeout=6, allow_redirects=True, verify=False)
-        if resp.status_code == 200:
-            m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\})\s*</script>", resp.text, re.S)
+    ]
+
+    for headers in headers_list:
+        try:
+            resp = requests.get(raw_url, headers=headers, timeout=8, allow_redirects=True, verify=False)
+            if resp.status_code != 200:
+                continue
+
+            html = resp.text
+
+            # 1. Ekstraksi dari window.__INITIAL_STATE__
+            m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\})\s*</script>", html, re.S)
             if m:
                 clean_json = m.group(1).replace("undefined", "null")
                 data = json.loads(clean_json)
-                note_data = data.get("note", {}).get("noteDetailMap", {})
-                if note_data:
-                    first_note = list(note_data.values())[0].get("note", {})
-                    title = first_note.get("title") or first_note.get("desc") or "RedNote Post"
-                    video = first_note.get("video") or {}
+                note_dict = data.get("note", {})
+                detail_map = note_dict.get("noteDetailMap", {})
+
+                target_note = None
+                if detail_map:
+                    target_note = list(detail_map.values())[0].get("note", {})
+                elif "firstNote" in note_dict:
+                    target_note = note_dict.get("firstNote", {})
+
+                if target_note:
+                    raw_title = target_note.get("title") or target_note.get("desc") or "RedNote Video"
+                    title = raw_title.strip().split("\n")[0][:100] or "RedNote Video"
+
+                    video = target_note.get("video") or {}
                     media = video.get("media") or {}
                     stream = media.get("stream") or {}
-                    
-                    video_url = None
-                    for k in ("h264", "h265", "av1"):
-                        if k in stream and stream[k]:
-                            video_url = stream[k][0].get("masterUrl") or stream[k][0].get("mainUrl")
-                            if video_url:
-                                break
 
-                    image_list = first_note.get("imageList") or []
-                    thumbnail = image_list[0].get("urlDefault") if image_list else None
+                    video_url = None
+                    for codec in ("h264", "h265", "h266", "av1"):
+                        entries = stream.get(codec) or []
+                        for entry in entries:
+                            cand = entry.get("masterUrl") or entry.get("mainUrl") or entry.get("backupUrl")
+                            if cand and ("http://" in cand or "https://" in cand):
+                                video_url = cand
+                                break
+                        if video_url:
+                            break
+
+                    image_list = target_note.get("imageList") or []
+                    thumbnail = image_list[0].get("urlDefault") or image_list[0].get("url") if image_list else None
 
                     if video_url:
                         return {
@@ -255,12 +283,31 @@ def _extract_rednote_html(raw_url: str) -> Optional[Dict[str, Any]]:
                             "direct_url": video_url,
                             "qualities": _quality_ladder([]),
                             "stream_headers": {
-                                "User-Agent": MOBILE_UA,
+                                "User-Agent": DESKTOP_UA,
                                 "Referer": "https://www.xiaohongshu.com/"
                             }
                         }
-    except Exception as e:
-        logger.debug(f"RedNote fast html error: {e}")
+
+            # 2. Fallback: Regex scan langsung untuk URL stream video (.mp4 di sns-video CDN)
+            v_match = re.search(r'(https?:\\?/\\?/[^"\'<>\s]+?(?:sns-video|xhscdn)[^"\'<>\s]+?\.mp4[^"\'<>\s]*)', html)
+            if v_match:
+                clean_v_url = v_match.group(1).replace(r"\/", "/").replace("\\u002F", "/")
+                title_m = re.search(r"<title>(.*?)</title>", html)
+                t = title_m.group(1).replace("- 小红书", "").replace(" - RED", "").strip() if title_m else "RedNote Video"
+                return {
+                    "title": t,
+                    "thumbnail": None,
+                    "duration": 60,
+                    "direct_url": clean_v_url,
+                    "qualities": _quality_ladder([]),
+                    "stream_headers": {
+                        "User-Agent": DESKTOP_UA,
+                        "Referer": "https://www.xiaohongshu.com/"
+                    }
+                }
+        except Exception as e:
+            logger.debug(f"RedNote fast html attempt failed: {e}")
+
     return None
 
 
@@ -604,22 +651,24 @@ def extract_media_info(raw_url: str) -> Dict[str, Any]:
     # --- 3. REDNOTE / XIAOHONGSHU ---
     elif any(s in url_low for s in ("xiaohongshu.com", "xhslink.com", "rednote")):
         logger.info(f"[Platform RedNote] Memproses: {target_url}")
-        # Jalur 1: Fast HTML State Extractor
+        # Jalur 1: Fast HTML State & CDN Stream Extractor
         info = _extract_rednote_html(target_url) or _extract_rednote_html(clean_target)
         if info:
             return info
 
         # Jalur 2: yt-dlp
         try:
-            return _extract_with_ytdlp(target_url, custom_headers={"User-Agent": MOBILE_UA, "Referer": "https://www.xiaohongshu.com/"})
+            return _extract_with_ytdlp(target_url, custom_headers={"User-Agent": DESKTOP_UA, "Referer": "https://www.xiaohongshu.com/"})
         except Exception:
             pass
 
         # Jalur 3: Playwright Stealth Browser Fallback
         try:
             return asyncio.run(_scrape_with_playwright_stealth(target_url, platform="rednote"))
-        except Exception as e:
-            raise Exception(f"Gagal mengekstrak media RedNote: {e}")
+        except Exception:
+            pass
+
+        raise Exception("Gagal mengekstrak video RedNote (Xiaohongshu). Pastikan link postingan bersifat publik dan masih aktif.")
 
     # --- 4. INSTAGRAM ---
     elif "instagram.com" in url_low or "instagr.am" in url_low:

@@ -897,85 +897,93 @@ function mapNetErr(e) {
 /* ---- Adsterra Monetization Components -------------------------------------- */
 
 function AdBanner728() {
-  const adRef = useRef(null);
-
-  useEffect(() => {
-    const el = adRef.current;
-    if (!el || el.children.length > 0) return;
-
-    try {
-      const confScript = document.createElement('script');
-      confScript.type = 'text/javascript';
-      confScript.innerHTML = `
-        atOptions = {
-          'key' : '37bfff0b33828fb26595d61a7e75f2c4',
-          'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
-          'params' : {}
-        };
-      `;
-
-      const invokeScript = document.createElement('script');
-      invokeScript.type = 'text/javascript';
-      invokeScript.src = 'https://www.highrevenueformat.com/37bfff0b33828fb26595d61a7e75f2c4/invoke.js';
-
-      el.appendChild(confScript);
-      el.appendChild(invokeScript);
-    } catch (_) {}
-  }, []);
+  const srcDoc = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { display: flex; justify-content: center; align-items: center; background: transparent; overflow: hidden; }
+        </style>
+      </head>
+      <body>
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '37bfff0b33828fb26595d61a7e75f2c4',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="https://www.highrevenueformat.com/37bfff0b33828fb26595d61a7e75f2c4/invoke.js"></script>
+      </body>
+    </html>
+  `;
 
   return (
     <div className="flex flex-col items-center justify-center my-3 overflow-hidden">
       <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
         Sponsored Advertisement
       </span>
-      <div
-        ref={adRef}
-        className="min-h-[90px] w-[728px] max-w-full overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5"
-      />
+      <div className="w-[728px] h-[90px] max-w-full overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5">
+        <iframe
+          title="ad-728x90"
+          srcDoc={srcDoc}
+          width="728"
+          height="90"
+          style={{ border: 'none', overflow: 'hidden' }}
+          scrolling="no"
+        />
+      </div>
     </div>
   );
 }
 
 function AdBanner300() {
-  const adRef = useRef(null);
-
-  useEffect(() => {
-    const el = adRef.current;
-    if (!el || el.children.length > 0) return;
-
-    try {
-      const confScript = document.createElement('script');
-      confScript.type = 'text/javascript';
-      confScript.innerHTML = `
-        atOptions = {
-          'key' : 'd9361be5c0aab62c2c81652f4e02b601',
-          'format' : 'iframe',
-          'height' : 250,
-          'width' : 300,
-          'params' : {}
-        };
-      `;
-
-      const invokeScript = document.createElement('script');
-      invokeScript.type = 'text/javascript';
-      invokeScript.src = 'https://www.highrevenueformat.com/d9361be5c0aab62c2c81652f4e02b601/invoke.js';
-
-      el.appendChild(confScript);
-      el.appendChild(invokeScript);
-    } catch (_) {}
-  }, []);
+  const srcDoc = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { display: flex; justify-content: center; align-items: center; background: transparent; overflow: hidden; }
+        </style>
+      </head>
+      <body>
+        <script type="text/javascript">
+          atOptions = {
+            'key' : 'd9361be5c0aab62c2c81652f4e02b601',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="https://www.highrevenueformat.com/d9361be5c0aab62c2c81652f4e02b601/invoke.js"></script>
+      </body>
+    </html>
+  `;
 
   return (
     <div className="flex flex-col items-center justify-center my-2.5 overflow-hidden">
       <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
         Sponsored Advertisement
       </span>
-      <div
-        ref={adRef}
-        className="min-h-[250px] w-[300px] overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5"
-      />
+      <div className="w-[300px] h-[250px] overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 shadow-sm">
+        <iframe
+          title="ad-300x250"
+          srcDoc={srcDoc}
+          width="300"
+          height="250"
+          style={{ border: 'none', overflow: 'hidden' }}
+          scrolling="no"
+        />
+      </div>
     </div>
   );
 }

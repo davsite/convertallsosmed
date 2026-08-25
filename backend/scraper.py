@@ -360,9 +360,10 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
     is_yt = "youtube.com" in url.lower() or "youtu.be" in url.lower()
     client_strategies = (
         [
-            ["android_embedded", "tv_embedded", "web_creator", "tv", "android"],
-            ["all"],
-            ["android", "ios", "mweb"]
+            ["android_vr"],
+            ["android_vr", "web_safari"],
+            ["tv"],
+            ["all"]
         ]
         if is_yt
         else [None]
@@ -392,11 +393,12 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
         if clients:
             ydl_opts["extractor_args"] = {
                 "youtube": {
-                    "player_client": clients
+                    "player_client": clients,
+                    "player_skip": ["js"]
                 }
             }
 
-        if custom_headers:
+        if custom_headers and not is_yt:
             ydl_opts["http_headers"] = custom_headers
 
         if os.path.exists(cookie_path):

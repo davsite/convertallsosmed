@@ -461,9 +461,12 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
     is_yt = "youtube.com" in url.lower() or "youtu.be" in url.lower()
     client_strategies = (
         [
-            ["android_vr"],
-            ["android_vr", "web_safari"],
-            ["tv"],
+            ["android"],
+            ["android_creator"],
+            ["mweb"],
+            ["web_safari"],
+            ["ios"],
+            ["tv_embedded"],
             ["all"]
         ]
         if is_yt
@@ -495,7 +498,6 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
             ydl_opts["extractor_args"] = {
                 "youtube": {
                     "player_client": clients,
-                    "player_skip": ["js"]
                 }
             }
 

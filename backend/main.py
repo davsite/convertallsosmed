@@ -222,6 +222,10 @@ def stream_video_proxy(url: str, request: Request):
             "Accept-Ranges": "bytes",
         }
 
+        if client_req.status_code not in (200, 206, 304):
+            client_req.close()
+            raise HTTPException(status_code=client_req.status_code, detail=f"CDN server status: {client_req.status_code}")
+
         for key, value in client_req.headers.items():
             k_low = key.lower()
             if k_low in ("content-type", "content-range", "content-length", "last-modified", "etag"):

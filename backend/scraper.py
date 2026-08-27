@@ -157,9 +157,12 @@ def fetch_tikwm_info(raw_url: str) -> Optional[Dict[str, Any]]:
                                 direct_url = "https:" + direct_url
 
                             if direct_url:
+                                cover_url = data.get("cover")
+                                if cover_url and cover_url.startswith("/"):
+                                    cover_url = "https://www.tikwm.com" + cover_url
                                 return {
                                     "title": data.get("title") or "Video TikTok",
-                                    "thumbnail": data.get("cover"),
+                                    "thumbnail": cover_url,
                                     "duration": int(data.get("duration") or 60),
                                     "direct_url": direct_url,
                                     "canonical_url": canonical or target,

@@ -92,6 +92,7 @@ export default function App() {
   const [state, setState] = useState('idle'); // idle | parsing | preview | processing | downloading | error
   const [error, setError] = useState('');
   const [videoError, setVideoError] = useState(false);
+  const [streamAttempt, setStreamAttempt] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
   const [videoRatio, setVideoRatio] = useState('Otomatis');
@@ -199,10 +200,13 @@ export default function App() {
     return opts;
   }, [video.qualities]);
 
-  const streamSrc = useMemo(
-    () => (video.streamUrl ? `${API}/api/stream?url=${encodeURIComponent(video.streamUrl)}` : undefined),
-    [video.streamUrl],
-  );
+  const streamSrc = useMemo(() => {
+    if (!video.streamUrl) return undefined;
+    if (streamAttempt === 1) {
+      return video.streamUrl;
+    }
+    return `${API}/api/stream?url=${encodeURIComponent(video.streamUrl)}`;
+  }, [video.streamUrl, streamAttempt]);
 
   const seek = (t) => { if (videoRef.current) videoRef.current.currentTime = t; };
 
@@ -332,6 +336,7 @@ export default function App() {
       });
       setStart(0); setEnd(dur); setNow(0); setResolution('best'); setFormat('mp4');
       setVideoRatio('Otomatis'); setIsVertical(false);
+      setVideoError(false); setStreamAttempt(0);
       setState('preview');
     } catch (e) {
       setError(mapNetErr(e)); setState('error');
@@ -669,21 +674,37 @@ export default function App() {
                   <div className="p-6 sm:p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]">
                     <AlertCircle size={36} className="text-rose-400 animate-bounce" />
                     <p className="text-xs sm:text-sm font-semibold text-slate-100">
-                      Stream preview dibatasi oleh protokol keamanan CDN platform.
+                      Stream preview proxy dibatasi oleh CDN platform.
                     </p>
                     <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-relaxed">
-                      Anda tetap dapat memotong ({fmt(start)} → {fmt(end)}) dan mengunduh video ini secara frame-accurate via server FFmpeg!
+                      Anda tetap dapat memotong ({fmt(start)} → {fmt(end)}) dan mengunduh media frame-accurate melalui server FFmpeg!
                     </p>
-                    <button
-                      onClick={fetchInfo}
-                      className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
-                    >
-                      <RefreshCw size={13} /> Coba Muat Ulang
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap justify-center pt-2">
+                      <button
+                        onClick={() => {
+                          setVideoError(false);
+                          setStreamAttempt((prev) => (prev === 0 ? 1 : 0));
+                        }}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-200 border border-cyan-400/30 text-xs font-bold hover:bg-cyan-500/30 transition cursor-pointer"
+                      >
+                        <Play size={13} /> {streamAttempt === 0 ? 'Putar Direct CDN' : 'Putar Proxy Server'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setVideoError(false);
+                          setStreamAttempt(0);
+                          fetchInfo();
+                        }}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
+                      >
+                        <RefreshCw size={13} /> Coba Muat Ulang
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <video
                     ref={videoRef}
+                    key={`vid-${streamAttempt}-${streamSrc}`}
                     src={streamSrc}
                     poster={video.thumbnail}
                     controls
@@ -734,7 +755,14 @@ export default function App() {
                       }
                     }}
                     onTimeUpdate={(e) => setNow(e.target.currentTime)}
-                    onError={() => setVideoError(true)}
+                    onError={(e) => {
+                      console.warn("Video stream load error, trying fallback...", e);
+                      if (streamAttempt === 0 && video.streamUrl) {
+                        setStreamAttempt(1);
+                      } else {
+                        setVideoError(true);
+                      }
+                    }}
                     className={`mx-auto rounded-xl object-contain bg-black shadow-2xl transition-all duration-300 ${
                       isVertical
                         ? 'max-h-[48vh] sm:max-h-[56vh] max-w-[280px] sm:max-w-xs md:max-w-sm w-auto'

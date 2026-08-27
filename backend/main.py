@@ -90,7 +90,7 @@ def _fallback_headers_for(url: str) -> dict:
     if "tikwm" in host or "tikwm" in low:
         return {"User-Agent": DESKTOP_UA, "Referer": "https://www.tikwm.com/", "Accept": "*/*"}
     if any(s in host or s in low for s in ("tiktok", "ttwstatic", "byteoversea", "tiktokcdn")):
-        return {"User-Agent": DESKTOP_UA, "Referer": "https://www.tiktok.com/", "Accept": "*/*"}
+        return {"User-Agent": DESKTOP_UA, "Accept": "*/*"}
     if any(s in host or s in low for s in ("xhscdn", "xiaohongshu", "rednote", "xhslink", "sns-video")):
         return {"User-Agent": MOBILE_UA, "Referer": "https://www.xiaohongshu.com/", "Accept": "*/*"}
     if any(s in host or s in low for s in ("cdninstagram", "instagram.com", "instagr.am", "fbcdn", "facebook.com", "fb.watch")):
@@ -204,6 +204,15 @@ def stream_video_proxy(url: str, request: Request):
             client_req = requests.get(
                 req_url, headers=fb_headers, stream=True, timeout=(8, 60), allow_redirects=True, verify=False
             )
+            # Jika masih 403, coba tanpa Referer dengan Desktop UA standar
+            if client_req.status_code in (403, 401, 400):
+                client_req.close()
+                bare_headers = {"User-Agent": DESKTOP_UA, "Accept": "*/*"}
+                if range_header:
+                    bare_headers["Range"] = range_header
+                client_req = requests.get(
+                    req_url, headers=bare_headers, stream=True, timeout=(8, 60), allow_redirects=True, verify=False
+                )
 
         resp_headers = {
             "Access-Control-Allow-Origin": "*",
@@ -222,6 +231,22 @@ def stream_video_proxy(url: str, request: Request):
         if not ct or "html" in ct or "json" in ct or "text" in ct:
             resp_headers["Content-Type"] = "video/mp4"
 
+        status_code = client_req.status_code
+        # Pastikan Content-Range selalu ada jika status 206 atau jika range_header bytes=0- dikirim
+        cl = resp_headers.get("content-length") or resp_headers.get("Content-Length")
+        has_cr = any(k.lower() == "content-range" for k in resp_headers.keys())
+        
+        if status_code == 200 and range_header and cl and str(cl).isdigit() and not has_cr:
+            total = int(cl)
+            resp_headers["Content-Range"] = f"bytes 0-{total - 1}/{total}"
+            status_code = 206
+        elif status_code == 206 and not has_cr and cl and str(cl).isdigit():
+            total = int(cl)
+            resp_headers["Content-Range"] = f"bytes 0-{total - 1}/{total}"
+
+        if status_code not in (200, 206, 304):
+            status_code = 206 if range_header else 200
+
         def generate():
             try:
                 for chunk in client_req.iter_content(chunk_size=1024 * 128):
@@ -229,10 +254,6 @@ def stream_video_proxy(url: str, request: Request):
                         yield chunk
             finally:
                 client_req.close()
-
-        status_code = client_req.status_code
-        if status_code not in (200, 206, 304):
-            status_code = 206 if range_header else 200
 
         return StreamingResponse(generate(), status_code=status_code, headers=resp_headers)
     except Exception as e:

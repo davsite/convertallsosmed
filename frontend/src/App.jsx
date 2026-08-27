@@ -343,33 +343,7 @@ export default function App() {
     }
   };
 
-  // Unduh cover / thumbnail instan
-  const downloadThumbnail = async () => {
-    if (!video.thumbnail) return;
-    try {
-      setToast('Mengunduh cover resolusi tinggi…');
-      const response = await fetch(video.thumbnail);
-      const blob = await response.blob();
-      const href = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = href;
-      a.download = `Cuplik_Cover_${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(href);
-      setToast('🖼️ Cover Thumbnail HD berhasil disimpan!');
-    } catch (_) {
-      // Fallback direct open
-      window.open(video.thumbnail, '_blank');
-    }
-  };
-
   const download = async () => {
-    if (format === 'thumbnail') {
-      return downloadThumbnail();
-    }
-
     setState('processing'); setError(''); setProg(null);
     try {
       const r = await fetch(`${API}/api/process`, {
@@ -638,15 +612,15 @@ export default function App() {
         {/* STUDIO WORKSPACE (PREVIEW & TRIMMING CONTROLS)                 */}
         {/* ============================================================== */}
         {(state === 'preview' || busy) && (
-          <section className="anim-fade-up space-y-3.5 sm:space-y-4 max-w-3xl mx-auto">
+          <section className="anim-fade-up space-y-4 sm:space-y-5 max-w-4xl mx-auto">
             
             {/* ============================================================== */}
-            {/* 1. STUDIO VIDEO PREVIEW CARD (AUTO ASPECT RATIO & AUTO REPLAY) */}
+            {/* 1. STUDIO VIDEO PREVIEW CARD (AUTO ASPECT RATIO & AUTOPLAY)    */}
             {/* ============================================================== */}
             <div className="glass-studio-card rounded-2xl overflow-hidden bg-black/90 shadow-2xl border border-slate-200/80 dark:border-white/10">
               
               {/* Player Header / Status Bar */}
-              <div className="px-3.5 py-2 sm:py-2.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between flex-wrap gap-2 text-[11px] sm:text-xs font-mono text-slate-300">
+              <div className="px-4 py-2.5 sm:py-3 bg-slate-900/95 border-b border-white/10 flex items-center justify-between flex-wrap gap-2 text-[11px] sm:text-xs font-mono text-slate-300">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_#f43f5e]" />
                   <span className="font-bold tracking-wider text-slate-200">STUDIO PREVIEW</span>
@@ -654,7 +628,7 @@ export default function App() {
                 
                 {/* Dynamic Auto Aspect Ratio Badge */}
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] sm:text-[11px] font-mono font-bold shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] sm:text-[11px] font-mono font-bold shadow-sm">
                     <Monitor size={12} className="text-cyan-400" />
                     <span>Rasio: {videoRatio}</span>
                   </span>
@@ -669,25 +643,25 @@ export default function App() {
               </div>
 
               {/* Responsive Video Container - Automatically Fits Vertical (TikTok/Reels) or Landscape (YouTube) */}
-              <div className="relative overflow-hidden bg-black flex items-center justify-center p-1.5 sm:p-2.5 min-h-[160px] sm:min-h-[220px]">
+              <div className="relative overflow-hidden bg-black flex items-center justify-center p-2.5 sm:p-4 min-h-[220px] sm:min-h-[300px]">
                 {videoError ? (
-                  <div className="p-5 sm:p-6 text-center space-y-2.5 bg-slate-900/95 flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
-                    <AlertCircle size={32} className="text-rose-400 animate-bounce" />
+                  <div className="p-6 sm:p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[260px]">
+                    <AlertCircle size={36} className="text-rose-400 animate-bounce" />
                     <p className="text-xs sm:text-sm font-semibold text-slate-100">
                       Stream preview proxy dibatasi oleh CDN platform.
                     </p>
                     <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-relaxed">
                       Anda tetap dapat memotong ({fmt(start)} → {fmt(end)}) dan mengunduh media frame-accurate melalui server FFmpeg!
                     </p>
-                    <div className="flex items-center gap-2 flex-wrap justify-center pt-1.5">
+                    <div className="flex items-center gap-2 flex-wrap justify-center pt-2">
                       <button
                         onClick={() => {
                           setVideoError(false);
                           setStreamAttempt((prev) => (prev === 0 ? 1 : 0));
                         }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-cyan-500/20 text-cyan-200 border border-cyan-400/30 text-xs font-bold hover:bg-cyan-500/30 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-200 border border-cyan-400/30 text-xs font-bold hover:bg-cyan-500/30 transition cursor-pointer"
                       >
-                        <Play size={12} /> {streamAttempt === 0 ? 'Putar Direct CDN' : 'Putar Proxy Server'}
+                        <Play size={13} /> {streamAttempt === 0 ? 'Putar Direct CDN' : 'Putar Proxy Server'}
                       </button>
                       <button
                         onClick={() => {
@@ -695,9 +669,9 @@ export default function App() {
                           setStreamAttempt(0);
                           fetchInfo();
                         }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
                       >
-                        <RefreshCw size={12} /> Coba Muat Ulang
+                        <RefreshCw size={13} /> Coba Muat Ulang
                       </button>
                     </div>
                   </div>
@@ -708,9 +682,13 @@ export default function App() {
                     src={streamSrc}
                     poster={video.thumbnail}
                     controls
+                    autoPlay
                     loop
                     playsInline
-                    preload="metadata"
+                    preload="auto"
+                    onCanPlay={(e) => {
+                      e.target.play().catch(() => {});
+                    }}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onEnded={(e) => {
@@ -719,6 +697,7 @@ export default function App() {
                     }}
                     onLoadedMetadata={(e) => {
                       const v = e.target;
+                      v.play().catch(() => {});
                       if (v.videoWidth && v.videoHeight) {
                         const w = v.videoWidth;
                         const h = v.videoHeight;
@@ -778,10 +757,10 @@ export default function App() {
                         setVideoError(true);
                       }
                     }}
-                    className={`mx-auto rounded-xl object-contain bg-black shadow-xl transition-all duration-300 ${
+                    className={`mx-auto rounded-xl object-contain bg-black shadow-2xl transition-all duration-300 ${
                       isVertical
-                        ? 'max-h-[38vh] sm:max-h-[46vh] max-w-[220px] sm:max-w-[260px] w-auto'
-                        : 'max-h-[28vh] sm:max-h-[36vh] w-full max-w-lg'
+                        ? 'max-h-[46vh] sm:max-h-[54vh] max-w-[260px] sm:max-w-[300px] md:max-w-[330px] w-auto'
+                        : 'max-h-[36vh] sm:max-h-[46vh] w-full max-w-2xl'
                     }`}
                   />
                 )}
@@ -1036,40 +1015,29 @@ export default function App() {
                   </span>
                 </div>
 
-                {/* Format 3-Tab Selector */}
-                <div className="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-white/10">
+                {/* Format 2-Tab Selector */}
+                <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-white/10">
                   <button
                     onClick={() => setFormat('mp4')}
-                    className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-2 py-3 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       format === 'mp4'
                         ? 'btn-studio-gradient text-white shadow-md'
                         : 'text-slate-600 dark:text-slate-400 hover:text-rose-500'
                     }`}
                   >
-                    <Tv size={15} className="mb-1" />
+                    <Tv size={16} />
                     <span>MP4 Video</span>
                   </button>
                   <button
                     onClick={() => setFormat('mp3')}
-                    className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-2 py-3 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       format === 'mp3'
                         ? 'btn-studio-gradient text-white shadow-md'
                         : 'text-slate-600 dark:text-slate-400 hover:text-purple-500'
                     }`}
                   >
-                    <Volume2 size={15} className="mb-1" />
+                    <Volume2 size={16} />
                     <span>MP3 Audio</span>
-                  </button>
-                  <button
-                    onClick={() => setFormat('thumbnail')}
-                    className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      format === 'thumbnail'
-                        ? 'btn-studio-gradient text-white shadow-md'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-cyan-500'
-                    }`}
-                  >
-                    <ImageIcon size={15} className="mb-1" />
-                    <span>Cover HD</span>
                   </button>
                 </div>
 
@@ -1098,14 +1066,6 @@ export default function App() {
                   <div className="anim-fade-up p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 font-mono flex items-center gap-2">
                     <Music size={15} className="text-purple-500 shrink-0" />
                     <span>Ekstraksi audio murni <b>320kbps Lossless HQ</b> tanpa watermark video.</span>
-                  </div>
-                )}
-
-                {/* Thumbnail Info */}
-                {format === 'thumbnail' && (
-                  <div className="anim-fade-up p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-700 dark:text-cyan-300 font-mono flex items-center gap-2">
-                    <Camera size={15} className="text-cyan-500 shrink-0" />
-                    <span>Unduh gambar sampul cover resolusi tinggi asli (Original HD JPG).</span>
                   </div>
                 )}
               </div>
@@ -1170,11 +1130,6 @@ export default function App() {
                     <>
                       <Loader2 className="animate-spin text-white" size={17} />
                       <span>{state === 'downloading' ? 'Mentransfer File ke Perangkat…' : 'Sedang Memotong Media…'}</span>
-                    </>
-                  ) : format === 'thumbnail' ? (
-                    <>
-                      <ImageIcon size={17} />
-                      <span>UNDUH COVER HD (JPG)</span>
                     </>
                   ) : (
                     <>

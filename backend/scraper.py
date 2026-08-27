@@ -99,84 +99,109 @@ def _quality_ladder(formats: List[dict]) -> List[dict]:
 # ============================================================================
 
 def fetch_tikwm_info(raw_url: str) -> Optional[Dict[str, Any]]:
-    """Mengambil media tanpa watermark secara instan via Savetik/TikWM API multi-endpoint."""
-    clean_target = raw_url.split('?')[0].split('#')[0]
-    urls_to_try = [clean_target, raw_url]
+    """Mengambil media tanpa watermark secara instan via Savetik/TikWM API."""
+    canonical = resolve_canonical_url(raw_url) or raw_url
+    clean_canonical = canonical.split('?')[0].split('#')[0]
+    clean_raw = raw_url.split('?')[0].split('#')[0]
     
-    canonical = resolve_canonical_url(raw_url)
-    if canonical and canonical != raw_url:
-        clean_canonical = canonical.split('?')[0].split('#')[0]
-        urls_to_try.insert(0, clean_canonical)
-        urls_to_try.append(canonical)
+    # Hanya gunakan URL valid yang memiliki format normal
+    urls_to_try = []
+    for u in [clean_canonical, clean_raw, canonical, raw_url]:
+        if u and u not in urls_to_try:
+            urls_to_try.append(u)
 
-    # Cek ID video jika ada
-    vid_match = re.search(r"/video/(\d+)", canonical or raw_url)
-    if vid_match:
-        vid = vid_match.group(1)
-        urls_to_try.insert(0, f"https://www.tiktok.com/@i/video/{vid}")
+    for target in urls_to_try[:2]:
+        for ep in ["https://www.tikwm.com/api/", "https://tikwm.com/api/"]:
+            try:
+                resp = requests.post(
+                    ep,
+                    data={"url": target, "count": 12, "cursor": 0, "web": 1, "hd": 1},
+                    timeout=7.0,
+                    verify=False,
+                    headers={
+                        "User-Agent": DESKTOP_UA,
+                        "Referer": "https://www.tikwm.com/",
+                        "Accept": "application/json, text/javascript, */*; q=0.01",
+                    },
+                )
+                if resp.status_code == 200:
+                    res = resp.json()
+                    if res.get("code") == 0:
+                        data = res.get("data") or {}
+                        video_id = data.get("id")
 
-    seen = set()
-    deduped_urls = []
-    for u in urls_to_try:
-        if u and u not in seen:
-            seen.add(u)
-            deduped_urls.append(u)
+                        direct_url = None
+                        if video_id:
+                            direct_url = f"https://www.tikwm.com/video/media/play/{video_id}.mp4"
 
-    endpoints = ["https://www.tikwm.com/api/", "https://tikwm.com/api/"]
+                        if not direct_url:
+                            direct_url = data.get("hdplay") or data.get("play") or data.get("wmplay")
 
-    for target in deduped_urls:
-        for ep in endpoints:
-            for attempt in range(2):
-                try:
-                    resp = requests.post(
-                        ep,
-                        data={"url": target, "count": 12, "cursor": 0, "web": 1, "hd": 1},
-                        timeout=8.0,
-                        verify=False,
-                        headers={
-                            "User-Agent": DESKTOP_UA,
-                            "Referer": "https://www.tikwm.com/",
-                            "Accept": "application/json, text/javascript, */*; q=0.01",
-                        },
-                    )
-                    if resp.status_code == 200:
-                        res = resp.json()
-                        if res.get("code") == 0:
-                            data = res.get("data") or {}
-                            video_id = data.get("id")
+                        if direct_url and direct_url.startswith("//"):
+                            direct_url = "https:" + direct_url
 
-                            # Gunakan direct proxy mirror TikWM atau HD play yang anti-timeout
-                            direct_url = None
-                            if video_id:
-                                direct_url = f"https://www.tikwm.com/video/media/play/{video_id}.mp4"
-
-                            if not direct_url:
-                                direct_url = data.get("hdplay") or data.get("play") or data.get("wmplay")
-
-                            if direct_url and direct_url.startswith("//"):
-                                direct_url = "https:" + direct_url
-
-                            if direct_url:
-                                cover_url = data.get("cover")
-                                if cover_url and cover_url.startswith("/"):
-                                    cover_url = "https://www.tikwm.com" + cover_url
-                                return {
-                                    "title": data.get("title") or "Video TikTok",
-                                    "thumbnail": cover_url,
-                                    "duration": int(data.get("duration") or 60),
-                                    "direct_url": direct_url,
-                                    "canonical_url": canonical or target,
-                                    "qualities": _quality_ladder([]),
-                                    "stream_headers": {
-                                        "User-Agent": DESKTOP_UA,
-                                        "Referer": "https://www.tikwm.com/"
-                                    }
+                        if direct_url:
+                            cover_url = data.get("cover")
+                            if cover_url and cover_url.startswith("/"):
+                                cover_url = "https://www.tikwm.com" + cover_url
+                            return {
+                                "title": data.get("title") or "Video TikTok",
+                                "thumbnail": cover_url,
+                                "duration": int(data.get("duration") or 60),
+                                "direct_url": direct_url,
+                                "canonical_url": canonical or target,
+                                "qualities": _quality_ladder([]),
+                                "stream_headers": {
+                                    "User-Agent": DESKTOP_UA,
+                                    "Referer": "https://www.tikwm.com/"
                                 }
-                        elif res.get("msg") == "request too fast":
-                            time.sleep(0.4)
-                except Exception:
-                    if attempt == 0:
-                        time.sleep(0.3)
+                            }
+            except Exception:
+                pass
+    return None
+
+
+def fetch_tiksave_info(raw_url: str) -> Optional[Dict[str, Any]]:
+    """Cadangan scraper TikTok via TikSave API (no watermark)."""
+    try:
+        canonical = resolve_canonical_url(raw_url) or raw_url
+        clean_url = canonical.split('?')[0].split('#')[0]
+        resp = requests.post(
+            "https://tiksave.io/api/ajaxSearch",
+            data={"q": clean_url},
+            headers={"User-Agent": DESKTOP_UA, "Referer": "https://tiksave.io/"},
+            timeout=7.0,
+            verify=False,
+        )
+        if resp.status_code == 200:
+            html = resp.json().get("data", "")
+            if html:
+                dl_matches = re.findall(r'href=[\'"](https?://[^\'"]+)[\'"]', html)
+                direct_url = None
+                for link in dl_matches:
+                    if "download" in link or "snapcdn" in link or "tik" in link:
+                        direct_url = link
+                        break
+                if not direct_url and dl_matches:
+                    direct_url = dl_matches[0]
+
+                title_match = re.search(r'<h3>(.*?)</h3>', html)
+                title = title_match.group(1) if title_match else "Video TikTok"
+                img_match = re.search(r'<img[^>]+src=[\'"](https?://[^\'"]+)[\'"]', html)
+                thumbnail = img_match.group(1) if img_match else ""
+
+                if direct_url:
+                    return {
+                        "title": title,
+                        "thumbnail": thumbnail,
+                        "duration": 60,
+                        "direct_url": direct_url,
+                        "canonical_url": clean_url,
+                        "qualities": _quality_ladder([]),
+                        "stream_headers": {"User-Agent": DESKTOP_UA}
+                    }
+    except Exception as e:
+        logger.warning(f"fetch_tiksave_info failed: {e}")
     return None
 
 
@@ -635,12 +660,17 @@ def extract_media_info(raw_url: str) -> Dict[str, Any]:
         if info:
             return info
 
-        # Jalur Cadangan 2: yt-dlp
+        # Jalur Cadangan 2: TikSave API
+        info_backup = fetch_tiksave_info(target_url) or fetch_tiksave_info(clean_target)
+        if info_backup:
+            return info_backup
+
+        # Jalur Cadangan 3: yt-dlp
         try:
-            return _extract_with_ytdlp(target_url, custom_headers={"User-Agent": DESKTOP_UA, "Referer": "https://www.tiktok.com/"})
+            return _extract_with_ytdlp(target_url, custom_headers={"User-Agent": MOBILE_UA, "Referer": "https://www.tiktok.com/"})
         except Exception as e:
             logger.error(f"Gagal mengambil video TikTok: {e}")
-            raise Exception(f"Gagal memproses video TikTok: {e}")
+            raise Exception("Layanan TikTok sedang sibuk atau URL tidak dapat diakses saat ini. Silakan coba sesaat lagi.")
 
     # --- 2. DOUYIN ---
     elif "douyin.com" in url_low or "iesdouyin.com" in url_low:

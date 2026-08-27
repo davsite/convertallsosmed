@@ -26,8 +26,8 @@ www.douyin.com	FALSE	/	FALSE	0	device_web_memory_size	4
 www.douyin.com	FALSE	/	FALSE	0	architecture	amd64
 .tiktok.com	TRUE	/	TRUE	1818036137	ttwid	1%7Cp4cg-BJMVzITMWS9OxcbBXnGN9i1wex56xIwSNwGV-A%7C1786932137%7Cf125b7daa675c3b1d9fab6dc36b064ea7863e1541b2c7cfafb45708043e150b7
 .tiktok.com	TRUE	/	TRUE	0	tt_csrf_token	IDqCgpKe-OcPXIIG26G23C6QU_ItJfLU_TYw
-.tiktok.com	TRUE	/	TRUE	1802484137	tt_chain_token	4aVP5IvwEwCX5DSRZ7nbTw==
-www.tiktok.com	FALSE	/	TRUE	1788672140	msToken	t5YdgG39tPQzwRXR31ukPNPr9s6B5UBJMfmJmAAPngyCtcZrY_BeCvlT-vTaSMEnRWpZoxqO_QzCEAcG5Up_Bp9xk_eKbw673g6Kj0x560wGTx-VWGzZre8=
+.tiktok.com	TRUE	/	TRUE	1803378218	tt_chain_token	4aVP5IvwEwCX5DSRZ7nbTw==
+www.tiktok.com	FALSE	/	TRUE	1788690218	msToken	Pb5v5BK0o8xRnQqUcdkJv-l7Hfke6x4AHzhMqeTlrdKmk-1eJ9SHvGpbVT1nulufA2wWlGthp6DyNk7D1gDlQDaCFkfoq60rnpHoVh33cKiawyuYeAzsxKo=
 www.tiktok.com	FALSE	/@daez_kane/video	FALSE	1787808441	_waftokenid	eyJ2Ijp7ImEiOiI1cnRWRW5zTEhmbmt2azd5TDFoeUg4V281NkZwWDBBREVaZW9ScHIrN1pzPSIsImIiOjE3ODc4MDgxNDAsImMiOiJ5YjQ5b1ZFaTA2VmRabC80SWw3N0VwRThQOG9uTWtZWmFkbU1tK1VnWVRJPSJ9LCJzIjoiV1pFcGlSbFhKRnFXTS9pSEVWSk9EM2YreUQ3UUsrelg1cXFIYzhUMVdDcz0ifQ
 .youtube.com	TRUE	/	FALSE	0	PREF	hl=en&tz=UTC
 .youtube.com	TRUE	/	TRUE	0	SOCS	CAI

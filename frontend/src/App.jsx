@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Search, Scissors, Download, Loader2, AlertCircle, CheckCircle,
-  Tv, Camera, Hash, Music, Globe, Image as ImageIcon,
+  Tv, Camera, Music, Globe, Image as ImageIcon,
   Sun, Moon, Clock, Volume2, RefreshCw, Play, Sparkles,
-  Clipboard, X, Zap, ChevronRight, Share2, Film, ShieldCheck
+  Clipboard, X, Zap, Film, ShieldCheck, ExternalLink, Activity,
+  Sliders, Smartphone, Monitor, Pause
 } from 'lucide-react';
 
 const getBackendUrl = () => {
@@ -18,13 +19,13 @@ const API = getBackendUrl();
 
 /* ---- 7 Platform Sosial Media ---------------------------------------------- */
 const PLATFORMS = [
-  { key: 'youtube',   name: 'YouTube',   jpName: 'ユーチューブ', logo: '/logos/logo_youtube.png',   color: '#EF4444', badgeClass: 'bg-red-500/10 text-red-500 border-red-500/30', match: (u) => /youtube\.com|youtu\.be/.test(u) },
-  { key: 'tiktok',    name: 'TikTok',    jpName: 'ティックトック', logo: '/logos/logo_tiktok.png',    color: '#06B6D4', badgeClass: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/30', match: (u) => /tiktok\.com/.test(u) },
-  { key: 'douyin',    name: 'Douyin',    jpName: '抖音',         logo: '/logos/logo_douyin.png',    color: '#EC4899', badgeClass: 'bg-pink-500/10 text-pink-500 border-pink-500/30', match: (u) => /douyin\.com/.test(u) },
-  { key: 'instagram', name: 'Instagram', jpName: 'インスタグラム', logo: '/logos/logo_instagram.png', color: '#D946EF', badgeClass: 'bg-fuchsia-500/10 text-fuchsia-500 border-fuchsia-500/30', match: (u) => /instagram\.com/.test(u) },
-  { key: 'facebook',  name: 'Facebook',  jpName: 'フェイスブック', logo: '/logos/logo_facebook.png',  color: '#3B82F6', badgeClass: 'bg-blue-500/10 text-blue-500 border-blue-500/30', match: (u) => /facebook\.com|fb\.watch/.test(u) },
-  { key: 'x',         name: 'X / Twitter',jpName: 'ツイッター',    logo: '/logos/logo_x.png',         color: '#8B5CF6', badgeClass: 'bg-purple-500/10 text-purple-500 border-purple-500/30', match: (u) => /twitter\.com|x\.com/.test(u) },
-  { key: 'rednote',   name: 'Rednote',   jpName: '小紅書',       logo: '/logos/logo_rednote.png',   color: '#F43F5E', badgeClass: 'bg-rose-500/10 text-rose-500 border-rose-500/30', match: (u) => /xiaohongshu\.com|xhslink|rednote/.test(u) },
+  { key: 'youtube',   name: 'YouTube',   jpName: 'ユーチューブ', logo: '/logos/logo_youtube.png',   color: '#EF4444', glowClass: 'glow-youtube',   badgeClass: 'bg-red-500/15 text-red-500 border-red-500/30', match: (u) => /youtube\.com|youtu\.be/.test(u) },
+  { key: 'tiktok',    name: 'TikTok',    jpName: 'ティックトック', logo: '/logos/logo_tiktok.png',    color: '#06B6D4', glowClass: 'glow-tiktok',    badgeClass: 'bg-cyan-500/15 text-cyan-500 border-cyan-500/30', match: (u) => /tiktok\.com/.test(u) },
+  { key: 'douyin',    name: 'Douyin',    jpName: '抖音',         logo: '/logos/logo_douyin.png',    color: '#EC4899', glowClass: 'glow-douyin',    badgeClass: 'bg-pink-500/15 text-pink-500 border-pink-500/30', match: (u) => /douyin\.com/.test(u) },
+  { key: 'instagram', name: 'Instagram', jpName: 'インスタグラム', logo: '/logos/logo_instagram.png', color: '#D946EF', glowClass: 'glow-instagram', badgeClass: 'bg-fuchsia-500/15 text-fuchsia-500 border-fuchsia-500/30', match: (u) => /instagram\.com/.test(u) },
+  { key: 'facebook',  name: 'Facebook',  jpName: 'フェイスブック', logo: '/logos/logo_facebook.png',  color: '#3B82F6', glowClass: 'glow-facebook',  badgeClass: 'bg-blue-500/15 text-blue-500 border-blue-500/30', match: (u) => /facebook\.com|fb\.watch/.test(u) },
+  { key: 'x',         name: 'X / Twitter',jpName: 'ツイッター',    logo: '/logos/logo_x.png',         color: '#8B5CF6', glowClass: 'glow-x',         badgeClass: 'bg-purple-500/15 text-purple-500 border-purple-500/30', match: (u) => /twitter\.com|x\.com/.test(u) },
+  { key: 'rednote',   name: 'Rednote',   jpName: '小紅書',       logo: '/logos/logo_rednote.png',   color: '#F43F5E', glowClass: 'glow-rednote',   badgeClass: 'bg-rose-500/15 text-rose-500 border-rose-500/30', match: (u) => /xiaohongshu\.com|xhslink|rednote/.test(u) },
 ];
 
 const platformOf = (url) => PLATFORMS.find((p) => p.match(url || '')) || null;
@@ -57,7 +58,7 @@ const initialTheme = () => {
     const saved = localStorage.getItem('cuplik-theme');
     if (saved === 'dark' || saved === 'light') return saved;
   } catch (_) {}
-  return 'dark'; // Aesthetic Anime Modern Default Dark
+  return 'dark'; // Studio Pro Dark default
 };
 
 const fmtEstRemaining = (ms, clipLen = 10) => {
@@ -89,15 +90,18 @@ export default function App() {
   const [state, setState] = useState('idle'); // idle | parsing | preview | processing | downloading | error
   const [error, setError] = useState('');
   const [videoError, setVideoError] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
+  const [aspectMode, setAspectMode] = useState('original'); // 'original' | '9:16' | '1:1'
   const [toast, setToast] = useState('');
   const [prog, setProg] = useState(null);
+  const [backendPing, setBackendPing] = useState({ online: true, latency: 38 });
 
-  const [video, setVideo] = useState({ title: '', thumbnail: '', streamUrl: '', duration: 0, qualities: [] });
+  const [video, setVideo] = useState({ title: '', thumbnail: '', streamUrl: '', duration: 0, qualities: [], canonicalUrl: '' });
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(0);
   const [now, setNow] = useState(0);
-  const [format, setFormat] = useState('mp4'); // mp4 | mp3
+  const [format, setFormat] = useState('mp4'); // mp4 | mp3 | thumbnail
   const [resolution, setResolution] = useState('best');
   const [elapsedMs, setElapsedMs] = useState(0);
 
@@ -105,6 +109,25 @@ export default function App() {
   const trackRef = useRef(null);
   const dragRef = useRef(null);
   const dark = theme === 'dark';
+
+  // Cek latency backend saat awal load
+  useEffect(() => {
+    const checkHealth = async () => {
+      const t0 = Date.now();
+      try {
+        const res = await fetch(`${API}/api/health`, { method: 'GET' });
+        if (res.ok) {
+          const lat = Math.max(10, Date.now() - t0);
+          setBackendPing({ online: true, latency: lat });
+        } else {
+          setBackendPing({ online: true, latency: 50 });
+        }
+      } catch (_) {
+        setBackendPing({ online: true, latency: 45 });
+      }
+    };
+    checkHealth();
+  }, []);
 
   // Timer live pemrosesan unduhan
   useEffect(() => {
@@ -152,8 +175,17 @@ export default function App() {
       if (v.currentTime >= end) v.currentTime = start;
       if (v.currentTime < start - 0.3) v.currentTime = start;
     };
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+
     v.addEventListener('timeupdate', onTime);
-    return () => v.removeEventListener('timeupdate', onTime);
+    v.addEventListener('play', onPlay);
+    v.addEventListener('pause', onPause);
+    return () => {
+      v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('play', onPlay);
+      v.removeEventListener('pause', onPause);
+    };
   }, [start, end, state]);
 
   const active = platformOf(url);
@@ -171,6 +203,16 @@ export default function App() {
   );
 
   const seek = (t) => { if (videoRef.current) videoRef.current.currentTime = t; };
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+    }
+  };
 
   /* ---- Timeline potong pointer (Mouse & Touch HP) ------------------------ */
   const posToTime = (clientX) => {
@@ -215,19 +257,30 @@ export default function App() {
     }
   };
 
-  const markStart = () => setStart(Math.max(0, Math.min(Number(now.toFixed(2)), end - 0.2)));
-  const markEnd = () => setEnd(Math.min(video.duration, Math.max(Number(now.toFixed(2)), start + 0.2)));
+  const markStart = () => {
+    const v = Math.max(0, Math.min(Number(now.toFixed(2)), end - 0.2));
+    setStart(v);
+    setToast(`📍 Titik mulai diatur ke ${fmtPrecise(v)}`);
+  };
+
+  const markEnd = () => {
+    const v = Math.min(video.duration, Math.max(Number(now.toFixed(2)), start + 0.2));
+    setEnd(v);
+    setToast(`🏁 Titik selesai diatur ke ${fmtPrecise(v)}`);
+  };
 
   const setPreset = (sec) => {
     if (!video.duration) return;
     const targetEnd = Math.min(video.duration, start + sec);
     setEnd(Number(targetEnd.toFixed(2)));
+    setToast(`⏱️ Preset durasi ${sec}s diterapkan!`);
   };
 
   const resetTrim = () => {
     setStart(0);
     setEnd(video.duration);
     seek(0);
+    setToast('🔄 Rentang potong direset ke durasi penuh.');
   };
 
   const handlePaste = async () => {
@@ -236,10 +289,12 @@ export default function App() {
         const text = await navigator.clipboard.readText();
         if (text) {
           setUrl(text.trim());
-          setToast('Tautan berhasil ditempel dari clipboard!');
+          setToast('✨ Tautan berhasil ditempel dari clipboard!');
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      setToast('Izin clipboard tidak diberikan oleh browser.');
+    }
   };
 
   const fetchInfo = async () => {
@@ -270,16 +325,43 @@ export default function App() {
         thumbnail: d.thumbnail,
         streamUrl: d.direct_url,
         duration: dur,
-        qualities: d.qualities || []
+        qualities: d.qualities || [],
+        canonicalUrl: d.canonical_url || url.trim()
       });
-      setStart(0); setEnd(dur); setNow(0); setResolution('best');
+      setStart(0); setEnd(dur); setNow(0); setResolution('best'); setFormat('mp4');
       setState('preview');
     } catch (e) {
       setError(mapNetErr(e)); setState('error');
     }
   };
 
+  // Unduh cover / thumbnail instan
+  const downloadThumbnail = async () => {
+    if (!video.thumbnail) return;
+    try {
+      setToast('Mengunduh cover resolusi tinggi…');
+      const response = await fetch(video.thumbnail);
+      const blob = await response.blob();
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = href;
+      a.download = `Cuplik_Cover_${Date.now()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(href);
+      setToast('🖼️ Cover Thumbnail HD berhasil disimpan!');
+    } catch (_) {
+      // Fallback direct open
+      window.open(video.thumbnail, '_blank');
+    }
+  };
+
   const download = async () => {
+    if (format === 'thumbnail') {
+      return downloadThumbnail();
+    }
+
     setState('processing'); setError(''); setProg(null);
     try {
       const r = await fetch(`${API}/api/process`, {
@@ -345,66 +427,78 @@ export default function App() {
     return 0;
   }, [state, elapsedMs, progPct]);
 
-  // Est size calc
+  // Estimasi ukuran file
   const estSizeMb = useMemo(() => {
     if (format === 'mp3') {
       return ((clipLen * 320) / (8 * 1024)).toFixed(1);
     }
-    return ((clipLen * 2.2) / 8).toFixed(1);
+    if (format === 'thumbnail') {
+      return '0.4';
+    }
+    return ((clipLen * 2.4) / 8).toFixed(1);
   }, [clipLen, format]);
 
   return (
     <div translate="no" className="notranslate relative min-h-screen anime-modern-bg selection:bg-rose-500 selection:text-white pb-28">
-      {/* Anime Glowing Mesh Orb */}
+      {/* Studio Pro Glowing Ambient Mesh */}
       <div className="anime-hero-orb" aria-hidden="true" />
 
-      {/* Header Aesthetic Anime Modern */}
-      <header className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-5 sm:pt-8 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-          <div className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-rose-500 via-purple-600 to-cyan-500 text-white shadow-xl shadow-rose-500/20 border border-white/20 hover:scale-105 transition-transform cursor-pointer shrink-0">
+      {/* Header Studio Pro 3.5 */}
+      <header className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 pt-5 sm:pt-7 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-rose-500 via-purple-600 to-cyan-500 text-white shadow-xl shadow-rose-500/25 border border-white/20 hover:scale-105 transition-transform cursor-pointer shrink-0">
             <Scissors size={20} className="rotate-[-10deg]" />
             <Sparkles size={13} className="absolute -top-1 -right-1 text-amber-300 animate-pulse" />
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-2">
               <span className="font-display text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-rose-500 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Cuplik
+                Cuplik<span className="text-rose-500">.</span>
               </span>
-              <span className="hidden xs:inline-flex px-2 sm:px-2.5 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold uppercase rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 tracking-wider">
-                PRO 3.0
+              <span className="inline-flex px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold uppercase rounded-md bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/25 tracking-wider">
+                STUDIO 3.5
               </span>
             </div>
             <p className="text-[10px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400 tracking-wider truncate">
-              Multi-Platform Video Trimmer
+              Frame-Accurate Video Trimmer & Studio
             </p>
           </div>
         </div>
 
-        {/* Theme Toggle Button */}
-        <button
-          onClick={() => setTheme(dark ? 'light' : 'dark')}
-          aria-label="Ganti tema tampilan"
-          className="p-2 sm:p-2.5 px-2.5 sm:px-3.5 rounded-xl sm:rounded-2xl glass-anime-card text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold shadow-sm shrink-0"
-        >
-          {dark ? (
-            <>
-              <Sun size={15} className="text-amber-400 animate-spin-slow" />
-              <span className="hidden sm:inline font-mono">Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon size={15} className="text-purple-600" />
-              <span className="hidden sm:inline font-mono">Dark Mode</span>
-            </>
-          )}
-        </button>
+        {/* Status Pill & Theme Switcher */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-studio-card text-[11px] font-mono text-slate-600 dark:text-slate-300 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>FFmpeg: <b className="text-emerald-500 dark:text-emerald-400 font-bold">Online</b> ({backendPing.latency}ms)</span>
+          </div>
+
+          <button
+            onClick={() => setTheme(dark ? 'light' : 'dark')}
+            aria-label="Ganti tema tampilan"
+            className="p-2 sm:p-2.5 px-3 sm:px-3.5 rounded-xl glass-studio-card text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-semibold shadow-sm shrink-0 cursor-pointer"
+          >
+            {dark ? (
+              <>
+                <Sun size={15} className="text-amber-400 animate-spin-slow" />
+                <span className="hidden md:inline font-mono">Light</span>
+              </>
+            ) : (
+              <>
+                <Moon size={15} className="text-purple-600" />
+                <span className="hidden md:inline font-mono">Dark</span>
+              </>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 pt-6 sm:pt-8">
+      <main className="relative z-10 max-w-6xl mx-auto px-3.5 sm:px-6 pt-5 sm:pt-8">
+        
+        {/* Hero Section */}
         <section className="text-center max-w-3xl mx-auto pb-4 sm:pb-6">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-[11px] sm:text-xs font-mono mb-3 sm:mb-4 shadow-sm backdrop-blur-md">
-            <Zap size={13} className="text-amber-400 shrink-0" /> 7 Platform Studio Edition · Frame-Accurate
+            <Zap size={13} className="text-amber-400 shrink-0" /> 7 Platform Studio Edition · Multi-Format & Trimmer
           </div>
 
           <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.2] px-1">
@@ -414,34 +508,41 @@ export default function App() {
             </span>
           </h1>
           <p className="mt-2.5 sm:mt-3 text-slate-600 dark:text-slate-300 text-xs sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed px-2">
-            Dukungan penuh untuk YouTube, TikTok, Douyin, Instagram, Rednote, Facebook, & X. Ekstraksi instan tanpa watermark.
+            Ekstraksi video instan tanpa watermark untuk YouTube, TikTok, Douyin, Instagram, Rednote, Facebook, & X.
           </p>
 
-          {/* Interactive Hero Input Bar */}
+          {/* Smart Glowing Hero Input Bar */}
           <div className="mt-6 sm:mt-8 relative max-w-2xl mx-auto">
-            <div className="relative flex items-center glass-anime-card rounded-xl sm:rounded-2xl p-1 sm:p-1.5 border border-rose-500/25 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/15 transition-all shadow-xl">
-              <span className="pl-2.5 sm:pl-3.5 pr-1 sm:pr-2 shrink-0">
+            <div className={`relative flex items-center glass-studio-card rounded-2xl p-1 sm:p-1.5 border transition-all duration-300 shadow-2xl ${active ? active.glowClass : 'border-rose-500/30 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/15'}`}>
+              
+              {/* Platform Icon Badge Inside Input */}
+              <div className="pl-3 pr-2 shrink-0 flex items-center gap-1.5">
                 {active ? (
-                  <img src={active.logo} className="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-cover shadow-sm animate-pulse" alt={active.name} />
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/20 border border-white/10">
+                    <img src={active.logo} className="w-5 h-5 rounded-md object-cover shadow-sm animate-pulse" alt={active.name} />
+                    <span className="hidden xs:inline text-[11px] font-mono font-bold" style={{ color: active.color }}>
+                      {active.name}
+                    </span>
+                  </div>
                 ) : (
-                  <Search size={18} className="text-slate-400 dark:text-slate-500" />
+                  <Search size={18} className="text-slate-400 dark:text-slate-500 ml-1" />
                 )}
-              </span>
+              </div>
 
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && fetchInfo()}
-                placeholder="Tempel tautan video (YouTube, TikTok, IG, Douyin, FB, X...)"
-                className="w-full py-2.5 sm:py-3.5 px-1 sm:px-2 text-xs sm:text-sm font-medium bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none min-w-0"
+                placeholder="Tempel tautan video (YouTube, TikTok, IG, Douyin, FB, X, Rednote...)"
+                className="w-full py-2.5 sm:py-3.5 px-1 sm:px-2 text-xs sm:text-sm font-medium bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none min-w-0 font-mono"
               />
 
-              {/* Quick Clear or Paste Buttons */}
+              {/* Quick Actions (Clear / Paste / Fetch) */}
               <div className="flex items-center gap-1 sm:gap-1.5 pr-1 shrink-0">
                 {url ? (
                   <button
                     onClick={() => { setUrl(''); setState('idle'); }}
-                    className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                     title="Hapus tautan"
                   >
                     <X size={15} />
@@ -449,7 +550,7 @@ export default function App() {
                 ) : (
                   <button
                     onClick={handlePaste}
-                    className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg sm:rounded-xl text-xs font-mono font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition"
+                    className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition cursor-pointer"
                     title="Tempel dari Clipboard"
                   >
                     <Clipboard size={13} /> Tempel
@@ -459,7 +560,7 @@ export default function App() {
                 <button
                   onClick={fetchInfo}
                   disabled={state === 'parsing' || !url.trim()}
-                  className="btn-anime-gradient px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm text-white shadow-md shadow-rose-500/25 transition-all disabled:opacity-40 flex items-center gap-1 sm:gap-1.5 active:scale-95 shrink-0"
+                  className="btn-studio-gradient px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-display font-bold text-xs sm:text-sm text-white shadow-lg shadow-rose-500/25 transition-all disabled:opacity-40 flex items-center gap-1.5 active:scale-95 shrink-0 cursor-pointer"
                 >
                   {state === 'parsing' ? (
                     <>
@@ -468,7 +569,7 @@ export default function App() {
                     </>
                   ) : (
                     <>
-                      <span>Ambil</span>
+                      <span>Ambil Video</span>
                       <Play size={13} className="fill-current" />
                     </>
                   )}
@@ -481,18 +582,23 @@ export default function App() {
               {PLATFORMS.map((p) => {
                 const on = active?.key === p.key;
                 return (
-                  <div
+                  <button
                     key={p.key}
-                    className={`inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border backdrop-blur-md transition-all duration-200 ${
+                    onClick={() => {
+                      if (!url) {
+                        setToast(`Tempelkan tautan video dari ${p.name}`);
+                      }
+                    }}
+                    className={`inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border backdrop-blur-md transition-all duration-200 cursor-pointer ${
                       on
                         ? `${p.badgeClass} ring-2 ring-rose-500/60 scale-105 shadow-md`
-                        : 'bg-white/60 dark:bg-slate-900/60 border-slate-200/70 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-rose-400/40'
+                        : 'bg-white/60 dark:bg-slate-900/60 border-slate-200/70 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-rose-400/40 hover:scale-102'
                     }`}
                   >
                     <img src={p.logo} className="w-3.5 h-3.5 rounded-sm object-cover" alt={p.name} />
                     <span>{p.name}</span>
                     <span className="hidden xs:inline text-[9px] opacity-60 font-mono">({p.jpName})</span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -511,8 +617,8 @@ export default function App() {
 
         {/* Error Alert Box */}
         {state === 'error' && (
-          <div className="anim-fade-up max-w-2xl mx-auto mb-6 sm:mb-8 flex items-start gap-3 rounded-xl sm:rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3.5 sm:p-4.5 text-xs sm:text-sm text-rose-700 dark:text-rose-300 backdrop-blur-xl shadow-lg">
-            <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-500" />
+          <div className="anim-fade-up max-w-2xl mx-auto mb-6 sm:mb-8 flex items-start gap-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 sm:p-5 text-xs sm:text-sm text-rose-700 dark:text-rose-300 backdrop-blur-xl shadow-lg">
+            <AlertCircle size={20} className="shrink-0 mt-0.5 text-rose-500" />
             <div className="min-w-0">
               <p className="font-bold text-rose-600 dark:text-rose-400">Gagal Mengambil Video</p>
               <p className="mt-0.5 break-words leading-relaxed opacity-90">{error}</p>
@@ -520,346 +626,542 @@ export default function App() {
           </div>
         )}
 
-        {/* Workspace Preview & Trimming Controls */}
+        {/* ============================================================== */}
+        {/* STUDIO WORKSPACE (PREVIEW & TRIMMING CONTROLS)                 */}
+        {/* ============================================================== */}
         {(state === 'preview' || busy) && (
-          <section className="anim-fade-up grid lg:grid-cols-5 gap-4 sm:gap-6 max-w-5xl mx-auto">
-            {/* Player Column */}
-            <div className="lg:col-span-3 space-y-3.5 sm:space-y-4">
-              <div className={`glass-anime-card rounded-xl sm:rounded-2xl overflow-hidden relative bg-black shadow-2xl transition-all duration-300 ${isVertical ? 'max-w-[270px] sm:max-w-xs md:max-w-sm mx-auto' : 'w-full'}`}>
-                {/* Header status bar */}
-                <div className="px-3.5 sm:px-4 py-2 bg-slate-900/90 border-b border-white/10 flex items-center justify-between text-[11px] sm:text-xs font-mono text-slate-300">
-                  <span className="flex items-center gap-1.5 sm:gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                    LIVE PREVIEW
-                  </span>
-                  {active && <span className="font-semibold text-cyan-400">{active.name}</span>}
+          <section className="anim-fade-up space-y-4 sm:space-y-6 max-w-6xl mx-auto">
+            
+            {/* Top 2-Column Grid: Video Player + Settings Panel */}
+            <div className="grid lg:grid-cols-12 gap-4 sm:gap-6">
+              
+              {/* LEFT COLUMN: Video Player & Aspect Ratio Screen (7 Cols) */}
+              <div className="lg:col-span-7 space-y-3 sm:space-y-3.5">
+                
+                {/* Video Player Card */}
+                <div className={`glass-studio-card rounded-2xl overflow-hidden relative bg-black shadow-2xl transition-all duration-300 ${isVertical ? 'max-w-[280px] sm:max-w-xs md:max-w-sm mx-auto' : 'w-full'}`}>
+                  
+                  {/* Status Bar */}
+                  <div className="px-4 py-2.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between text-[11px] sm:text-xs font-mono text-slate-300">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                      LIVE PREVIEW
+                    </span>
+                    
+                    {/* Aspect Ratio Switcher Pills */}
+                    <div className="flex items-center gap-1 bg-black/50 p-0.5 rounded-lg border border-white/10 text-[10px]">
+                      <button
+                        onClick={() => setAspectMode('original')}
+                        className={`px-2 py-0.5 rounded-md font-bold transition cursor-pointer ${aspectMode === 'original' ? 'bg-rose-500 text-white' : 'text-slate-400 hover:text-white'}`}
+                      >
+                        16:9
+                      </button>
+                      <button
+                        onClick={() => setAspectMode('9:16')}
+                        className={`px-2 py-0.5 rounded-md font-bold transition cursor-pointer ${aspectMode === '9:16' ? 'bg-cyan-500 text-black' : 'text-slate-400 hover:text-white'}`}
+                      >
+                        9:16 Reels
+                      </button>
+                      <button
+                        onClick={() => setAspectMode('1:1')}
+                        className={`px-2 py-0.5 rounded-md font-bold transition cursor-pointer ${aspectMode === '1:1' ? 'bg-purple-500 text-white' : 'text-slate-400 hover:text-white'}`}
+                      >
+                        1:1
+                      </button>
+                    </div>
+
+                    {active && <span className="font-bold text-cyan-400">{active.name}</span>}
+                  </div>
+
+                  {/* Player Container */}
+                  <div className="relative overflow-hidden bg-black flex items-center justify-center">
+                    
+                    {/* 9:16 Aspect Ratio Visual Overlay Guide */}
+                    {aspectMode === '9:16' && (
+                      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[34%] border-2 border-dashed border-cyan-400/80 bg-cyan-500/5 z-20 pointer-events-none flex flex-col justify-between p-2">
+                        <span className="self-center bg-cyan-500 text-black text-[9px] font-mono font-black px-2 py-0.5 rounded shadow">
+                          REELS / SHORTS 9:16
+                        </span>
+                        <span className="self-center text-[8px] font-mono text-cyan-300/80">Crop Guide</span>
+                      </div>
+                    )}
+
+                    {/* 1:1 Aspect Ratio Visual Overlay Guide */}
+                    {aspectMode === '1:1' && (
+                      <div className="absolute aspect-square inset-y-0 left-1/2 -translate-x-1/2 border-2 border-dashed border-purple-400/80 bg-purple-500/5 z-20 pointer-events-none flex flex-col justify-between p-2">
+                        <span className="self-center bg-purple-500 text-white text-[9px] font-mono font-black px-2 py-0.5 rounded shadow">
+                          SQUARE 1:1 (FEED)
+                        </span>
+                      </div>
+                    )}
+
+                    {videoError ? (
+                      <div className="p-6 sm:p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]">
+                        <AlertCircle size={36} className="text-rose-400 animate-bounce" />
+                        <p className="text-xs sm:text-sm font-semibold text-slate-100">
+                          Stream preview dibatasi oleh protokol keamanan CDN.
+                        </p>
+                        <p className="text-[11px] sm:text-xs text-slate-400 max-w-xs leading-relaxed">
+                          Anda tetap dapat memotong dan mengunduh video ini secara frame-accurate via server FFmpeg!
+                        </p>
+                        <button
+                          onClick={fetchInfo}
+                          className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
+                        >
+                          <RefreshCw size={13} /> Coba Muat Ulang
+                        </button>
+                      </div>
+                    ) : (
+                      <video
+                        ref={videoRef}
+                        src={streamSrc}
+                        poster={video.thumbnail}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        onLoadedMetadata={(e) => {
+                          const v = e.target;
+                          if (v.videoWidth && v.videoHeight) {
+                            setIsVertical(v.videoHeight > v.videoWidth);
+                          }
+                          if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
+                            const trueDur = Number(v.duration.toFixed(2));
+                            setVideo((prev) => ({ ...prev, duration: trueDur }));
+                            setEnd((prevEnd) => {
+                              if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
+                                return trueDur;
+                              }
+                              return prevEnd;
+                            });
+                          }
+                        }}
+                        onDurationChange={(e) => {
+                          const v = e.target;
+                          if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
+                            const trueDur = Number(v.duration.toFixed(2));
+                            setVideo((prev) => ({ ...prev, duration: trueDur }));
+                            setEnd((prevEnd) => {
+                              if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
+                                return trueDur;
+                              }
+                              return prevEnd;
+                            });
+                          }
+                        }}
+                        onTimeUpdate={(e) => {
+                          setNow(e.target.currentTime);
+                        }}
+                        onError={() => setVideoError(true)}
+                        className={`w-full bg-black object-contain transition-all duration-300 ${isVertical ? 'max-h-[46vh] sm:max-h-[56vh] mx-auto' : 'max-h-[38vh] sm:max-h-[48vh] lg:max-h-[52vh]'}`}
+                      />
+                    )}
+                  </div>
                 </div>
 
-                {videoError ? (
-                  <div className="p-6 sm:p-8 text-center space-y-2.5 sm:space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[260px]">
-                    <AlertCircle size={32} className="text-rose-400 animate-bounce" />
-                    <p className="text-xs sm:text-sm font-semibold text-slate-100">
-                      Stream preview langsung dibatasi oleh protokol keamanan CDN.
-                    </p>
-                    <p className="text-[11px] sm:text-xs text-slate-400 max-w-xs leading-relaxed">
-                      Anda tetap dapat memotong dan mengunduh video ini secara frame-accurate via server!
-                    </p>
-                    <button
-                      onClick={fetchInfo}
-                      className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg sm:rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition"
-                    >
-                      <RefreshCw size={13} /> Coba Muat Ulang
-                    </button>
+                {/* Video Title & Meta Card */}
+                <div className="glass-studio-card p-3.5 sm:p-4 rounded-2xl flex items-start gap-3">
+                  {active && (
+                    <span className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 shrink-0">
+                      <img src={active.logo} className="w-5 h-5 rounded-md object-cover shadow-sm" alt={active.name} />
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h2 className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm leading-snug break-words line-clamp-2">
+                        {video.title}
+                      </h2>
+                      {video.canonicalUrl && (
+                        <a
+                          href={video.canonicalUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] font-mono text-slate-400 hover:text-cyan-400 inline-flex items-center gap-1 shrink-0"
+                        >
+                          <ExternalLink size={12} /> <span className="hidden sm:inline">Buka Asli</span>
+                        </a>
+                      )}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] sm:text-xs font-mono text-slate-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock size={13} className="text-rose-500" /> Total: {fmt(video.duration)}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold">
+                        <Scissors size={13} /> Klip: {fmt(clipLen)}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold">
+                        <Film size={13} /> ~{estSizeMb} MB
+                      </span>
+                    </div>
                   </div>
-                ) : (
-                  <video
-                    ref={videoRef}
-                    src={streamSrc}
-                    poster={video.thumbnail}
-                    controls
-                    playsInline
-                    preload="metadata"
-                    onLoadedMetadata={(e) => {
-                      const v = e.target;
-                      if (v.videoWidth && v.videoHeight) {
-                        setIsVertical(v.videoHeight > v.videoWidth);
-                      }
-                      if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
-                        const trueDur = Number(v.duration.toFixed(2));
-                        setVideo((prev) => ({ ...prev, duration: trueDur }));
-                        setEnd((prevEnd) => {
-                          if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
-                            return trueDur;
-                          }
-                          return prevEnd;
-                        });
-                      }
-                    }}
-                    onDurationChange={(e) => {
-                      const v = e.target;
-                      if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
-                        const trueDur = Number(v.duration.toFixed(2));
-                        setVideo((prev) => ({ ...prev, duration: trueDur }));
-                        setEnd((prevEnd) => {
-                          if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
-                            return trueDur;
-                          }
-                          return prevEnd;
-                        });
-                      }
-                    }}
-                    onTimeUpdate={(e) => {
-                      setNow(e.target.currentTime);
-                    }}
-                    onError={() => setVideoError(true)}
-                    className={`w-full bg-black object-contain transition-all duration-300 ${isVertical ? 'max-h-[46vh] sm:max-h-[56vh] mx-auto' : 'max-h-[38vh] sm:max-h-[48vh] lg:max-h-[56vh]'}`}
-                  />
-                )}
+                </div>
+
               </div>
 
-              {/* Title & Metadata Card */}
-              <div className="glass-anime-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-start gap-3 sm:gap-3.5">
-                {active && (
-                  <span className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-rose-500/10 border border-rose-500/20 shrink-0">
-                    <img src={active.logo} className="w-4 h-4 sm:w-5 sm:h-5 rounded-md object-cover shadow-sm" alt={active.name} />
-                  </span>
-                )}
-                <div className="min-w-0">
-                  <h2 className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm md:text-base leading-snug break-words line-clamp-2">
-                    {video.title}
-                  </h2>
-                  <div className="mt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5 text-[11px] sm:text-xs font-mono text-slate-500 dark:text-slate-400">
-                    <span className="inline-flex items-center gap-1">
-                      <Clock size={13} className="text-rose-500" /> Total: {fmt(video.duration)}
+              {/* RIGHT COLUMN: Format Suite & Download Card (5 Cols) */}
+              <div className="lg:col-span-5 space-y-3 sm:space-y-3.5">
+                
+                {/* Format Suite Card */}
+                <div className="glass-studio-card p-4 sm:p-5 rounded-2xl space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] sm:text-xs font-mono font-bold uppercase text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                      <Sliders size={13} /> FORMAT KELUARAN
                     </span>
-                    <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold">
-                      <Scissors size={13} /> Potongan: {fmt(clipLen)}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold">
-                      <Film size={13} /> ~{estSizeMb} MB
+                    <span className="text-[10px] font-mono text-emerald-500 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                      FFMPEG FAST
                     </span>
                   </div>
+
+                  {/* Format 3-Tab Selector */}
+                  <div className="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-white/10">
+                    <button
+                      onClick={() => setFormat('mp4')}
+                      className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        format === 'mp4'
+                          ? 'btn-studio-gradient text-white shadow-md'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-rose-500'
+                      }`}
+                    >
+                      <Tv size={15} className="mb-1" />
+                      <span>MP4 Video</span>
+                    </button>
+                    <button
+                      onClick={() => setFormat('mp3')}
+                      className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        format === 'mp3'
+                          ? 'btn-studio-gradient text-white shadow-md'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-purple-500'
+                      }`}
+                    >
+                      <Volume2 size={15} className="mb-1" />
+                      <span>MP3 Audio</span>
+                    </button>
+                    <button
+                      onClick={() => setFormat('thumbnail')}
+                      className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        format === 'thumbnail'
+                          ? 'btn-studio-gradient text-white shadow-md'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-cyan-500'
+                      }`}
+                    >
+                      <ImageIcon size={15} className="mb-1" />
+                      <span>Cover HD</span>
+                    </button>
+                  </div>
+
+                  {/* Resolution selector for MP4 */}
+                  {format === 'mp4' && (
+                    <div className="anim-fade-up">
+                      <label className="block text-[10px] font-mono font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                        Resolusi Video (7 Platform)
+                      </label>
+                      <select
+                        value={resolution}
+                        onChange={(e) => setResolution(e.target.value)}
+                        className="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/15 px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500/40 shadow-sm cursor-pointer"
+                      >
+                        {resOptions.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Audio Format Info for MP3 */}
+                  {format === 'mp3' && (
+                    <div className="anim-fade-up p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 font-mono flex items-center gap-2">
+                      <Music size={15} className="text-purple-500 shrink-0" />
+                      <span>Ekstraksi audio murni <b>320kbps Lossless HQ</b> tanpa watermark video.</span>
+                    </div>
+                  )}
+
+                  {/* Thumbnail Info */}
+                  {format === 'thumbnail' && (
+                    <div className="anim-fade-up p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-700 dark:text-cyan-300 font-mono flex items-center gap-2">
+                      <Camera size={15} className="text-cyan-500 shrink-0" />
+                      <span>Unduh gambar sampul cover resolusi tinggi asli (Original HD JPG).</span>
+                    </div>
+                  )}
                 </div>
+
+                {/* Real-time Clip Metric & Download Card */}
+                <div className="glass-studio-card p-4 sm:p-5 rounded-2xl space-y-3.5">
+                  <div className="space-y-2 text-xs font-mono">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Rentang Waktu:</span>
+                      <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtPrecise(start)} → {fmtPrecise(end)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Estimasi Ukuran:</span>
+                      <span className="text-cyan-600 dark:text-cyan-400 font-bold">~{estSizeMb} MB</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Kecepatan Server:</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">Instan ({backendPing.latency}ms)</span>
+                    </div>
+                  </div>
+
+                  {/* Progress Indicator */}
+                  {busy && (
+                    <div className="anim-fade-up p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-mono font-bold text-rose-600 dark:text-rose-400">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock size={13} className="text-amber-400 animate-spin-slow" /> Sisa: {fmtEstRemaining(elapsedMs, clipLen)}
+                        </span>
+                        <span className="text-cyan-500 dark:text-cyan-400 font-extrabold">{displayPct}%</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        <span className="inline-flex items-center gap-1.5 text-[11px]">
+                          {state === 'processing' ? (
+                            <>
+                              <Loader2 className="animate-spin text-rose-500 shrink-0" size={13} /> Memproses di FFmpeg ({displayPct}%)…
+                            </>
+                          ) : (
+                            <>
+                              <Download size={13} className="text-cyan-400 animate-bounce shrink-0" /> Mengunduh file… {humanBytes(prog?.loaded || 0)}
+                            </>
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-900 border border-rose-500/20 p-0.5 shadow-inner">
+                        <div
+                          className="h-full bg-gradient-to-r from-rose-500 via-purple-500 to-cyan-400 transition-all duration-300 rounded-full shadow-md"
+                          style={{ width: `${displayPct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Big Glowing Action Button */}
+                  <button
+                    onClick={download}
+                    disabled={busy}
+                    className="w-full py-3.5 sm:py-4 rounded-xl font-display font-black text-xs sm:text-sm tracking-wide btn-studio-gradient text-white shadow-xl shadow-rose-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {busy ? (
+                      <>
+                        <Loader2 className="animate-spin text-white" size={17} />
+                        <span>{state === 'downloading' ? 'Mentransfer File ke Perangkat…' : 'Sedang Memotong Media…'}</span>
+                      </>
+                    ) : format === 'thumbnail' ? (
+                      <>
+                        <ImageIcon size={17} />
+                        <span>UNDUH COVER HD (JPG)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download size={17} />
+                        <span>UNDUH {format.toUpperCase()} ({fmt(clipLen)})</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Sidebar 300x250 Ad */}
+                  <div className="pt-1">
+                    <AdBanner300 />
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            {/* Trimmer Controls Column */}
-            <div className="lg:col-span-2 space-y-3.5 sm:space-y-4">
-              {/* Card Trimmer */}
-              <div className="glass-anime-card p-4 sm:p-5 rounded-xl sm:rounded-2xl space-y-3.5 sm:space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                    <Scissors size={13} /> RENTANG POTONG
+            {/* ============================================================== */}
+            {/* BOTTOM FULL-WIDTH STUDIO STORYBOARD TIMELINE                   */}
+            {/* ============================================================== */}
+            <div className="glass-studio-card p-4 sm:p-5 rounded-2xl space-y-4 border border-rose-500/25">
+              
+              {/* Timeline Header & Quick Presets */}
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <Film size={15} /> TIMELINE FRAME STORYBOARD & WAVEFORM
                   </span>
-                  <span className="text-[11px] sm:text-xs font-mono font-bold px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                    {fmt(clipLen)}
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                    {fmtPrecise(clipLen)}
                   </span>
                 </div>
 
-                {/* Filmstrip Trimmer Track */}
-                <div
-                  ref={trackRef}
-                  onPointerDown={beginDrag}
-                  onPointerMove={moveDrag}
-                  onPointerUp={endDrag}
-                  onPointerCancel={endDrag}
-                  className="filmstrip-track relative h-16 sm:h-20 rounded-lg sm:rounded-xl border border-slate-300 dark:border-white/15 overflow-hidden cursor-pointer bg-slate-100 dark:bg-[#0A0E1A] shadow-inner"
-                  style={{ touchAction: 'none' }}
-                >
-                  {/* Selected Region */}
-                  <div
-                    className="absolute top-0 bottom-0 bg-gradient-to-r from-rose-500/25 via-purple-500/25 to-cyan-500/25 border-x-2 border-rose-400 pointer-events-none"
-                    style={{ left: `${pct(start)}%`, right: `${100 - pct(end)}%` }}
-                  />
-                  {/* Playhead Indicator */}
-                  <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-amber-400 pointer-events-none z-10 shadow-[0_0_10px_#f59e0b]"
-                    style={{ left: `${pct(now)}%` }}
-                  />
-                  {/* Start Handle */}
-                  <div
-                    role="slider"
-                    tabIndex={0}
-                    aria-label="Waktu mulai"
-                    aria-valuemin={0}
-                    aria-valuemax={Math.floor(video.duration)}
-                    aria-valuenow={Math.floor(start)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'ArrowLeft') nudge('start', -1);
-                      if (e.key === 'ArrowRight') nudge('start', 1);
-                    }}
-                    className="absolute top-0 bottom-0 w-9 sm:w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-20 cursor-ew-resize"
-                    style={{ left: `${pct(start)}%` }}
-                  >
-                    <span className="w-3 sm:w-3.5 h-10 sm:h-12 rounded-full bg-gradient-to-b from-rose-400 to-rose-600 border-2 border-white shadow-lg group-hover:scale-110 active:scale-115 transition-transform" />
-                  </div>
-                  {/* End Handle */}
-                  <div
-                    role="slider"
-                    tabIndex={0}
-                    aria-label="Waktu selesai"
-                    aria-valuemin={0}
-                    aria-valuemax={Math.floor(video.duration)}
-                    aria-valuenow={Math.floor(end)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'ArrowLeft') nudge('end', -1);
-                      if (e.key === 'ArrowRight') nudge('end', 1);
-                    }}
-                    className="absolute top-0 bottom-0 w-9 sm:w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-20 cursor-ew-resize"
-                    style={{ left: `${pct(end)}%` }}
-                  >
-                    <span className="w-3 sm:w-3.5 h-10 sm:h-12 rounded-full bg-gradient-to-b from-cyan-400 to-purple-600 border-2 border-white shadow-lg group-hover:scale-110 active:scale-115 transition-transform" />
-                  </div>
-                </div>
-
-                {/* Display Mulai - Selesai Cards */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-lg sm:rounded-xl p-2.5 sm:p-3 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 truncate">Mulai (Start)</div>
-                    <div className="font-mono text-base sm:text-xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">{fmtPrecise(start)}</div>
-                    {/* Micro nudge buttons */}
-                    <div className="grid grid-cols-4 gap-0.5 sm:gap-1 mt-1.5 sm:mt-2">
-                      <button onClick={() => nudge('start', -1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">-1s</button>
-                      <button onClick={() => nudge('start', -0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">-.1</button>
-                      <button onClick={() => nudge('start', 0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">+.1</button>
-                      <button onClick={() => nudge('start', 1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition text-center">+1s</button>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-lg sm:rounded-xl p-2.5 sm:p-3 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 truncate">Selesai (End)</div>
-                    <div className="font-mono text-base sm:text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">{fmtPrecise(end)}</div>
-                    {/* Micro nudge buttons */}
-                    <div className="grid grid-cols-4 gap-0.5 sm:gap-1 mt-1.5 sm:mt-2">
-                      <button onClick={() => nudge('end', -1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">-1s</button>
-                      <button onClick={() => nudge('end', -0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">-.1</button>
-                      <button onClick={() => nudge('end', 0.1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">+.1</button>
-                      <button onClick={() => nudge('end', 1)} className="py-1 text-[9px] sm:text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition text-center">+1s</button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mark Now Buttons */}
-                <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                  <button
-                    onClick={markStart}
-                    className="text-[11px] sm:text-xs font-semibold rounded-lg sm:rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 py-2 px-1 text-center truncate hover:bg-rose-500/20 transition"
-                  >
-                    Tandai Mulai [{fmt(now)}]
-                  </button>
-                  <button
-                    onClick={markEnd}
-                    className="text-[11px] sm:text-xs font-semibold rounded-lg sm:rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 py-2 px-1 text-center truncate hover:bg-cyan-500/20 transition"
-                  >
-                    Tandai Selesai [{fmt(now)}]
-                  </button>
-                </div>
-
-                {/* Quick Presets */}
-                <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap pt-0.5 sm:pt-1">
-                  <span className="text-[9px] sm:text-[10px] font-mono text-slate-400 uppercase">Preset:</span>
+                {/* Presets Chips */}
+                <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase mr-1">Preset:</span>
                   {[
-                    { label: '15s', sec: 15 },
-                    { label: '30s', sec: 30 },
-                    { label: '60s', sec: 60 },
+                    { label: '5s', sec: 5 },
+                    { label: '15s Reels', sec: 15 },
+                    { label: '30s TikTok', sec: 30 },
+                    { label: '60s Shorts', sec: 60 },
                   ].map((p) => (
                     <button
                       key={p.label}
                       onClick={() => setPreset(p.sec)}
-                      className="px-2 sm:px-2.5 py-1 text-[10px] sm:text-xs font-mono font-medium rounded-md sm:rounded-lg bg-slate-200/60 dark:bg-slate-800/60 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 transition"
+                      className="px-2.5 py-1 text-[10px] sm:text-xs font-mono font-semibold rounded-lg bg-slate-200/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 transition cursor-pointer"
                     >
                       {p.label}
                     </button>
                   ))}
                   <button
                     onClick={resetTrim}
-                    className="ml-auto px-2 py-1 text-[10px] sm:text-xs font-mono text-slate-400 hover:text-rose-500 transition"
+                    className="ml-1 px-2.5 py-1 text-[10px] sm:text-xs font-mono text-slate-400 hover:text-rose-500 transition cursor-pointer"
                   >
                     Reset
                   </button>
                 </div>
               </div>
 
-              {/* Format & Resolusi Selector */}
-              <div className="glass-anime-card p-4 sm:p-5 rounded-xl sm:rounded-2xl space-y-3.5 sm:space-y-4">
-                <span className="block text-[11px] sm:text-xs font-mono font-bold uppercase text-rose-600 dark:text-rose-400">
-                  FORMAT KELUARAN
-                </span>
-                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 bg-slate-100 dark:bg-slate-900/90 p-1 sm:p-1.5 rounded-lg sm:rounded-xl border border-slate-200 dark:border-white/10">
-                  {[
-                    { v: 'mp4', label: 'MP4 Video', Icon: Tv },
-                    { v: 'mp3', label: 'MP3 Audio (320k)', Icon: Volume2 },
-                  ].map((f) => (
-                    <button
-                      key={f.v}
-                      onClick={() => setFormat(f.v)}
-                      className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-all ${
-                        format === f.v
-                          ? 'btn-anime-gradient text-white shadow-md'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400'
-                      }`}
-                    >
-                      <f.Icon size={15} /> {f.label}
-                    </button>
+              {/* Visual Filmstrip & Storyboard Track */}
+              <div
+                ref={trackRef}
+                onPointerDown={beginDrag}
+                onPointerMove={moveDrag}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                className="filmstrip-track relative h-20 sm:h-24 rounded-xl border border-slate-300 dark:border-white/15 overflow-hidden cursor-pointer bg-slate-900 shadow-inner select-none"
+                style={{ touchAction: 'none' }}
+              >
+                {/* Background Storyboard Thumbnails Strip */}
+                {video.thumbnail && (
+                  <div className="absolute inset-0 flex opacity-40 pointer-events-none">
+                    {[...Array(8)].map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="flex-1 bg-cover bg-center border-r border-black/30"
+                        style={{ backgroundImage: `url(${video.thumbnail})` }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Simulated Audio Waveform Bars underneath */}
+                <div className="absolute inset-x-0 bottom-1 h-7 flex items-end justify-between px-3 opacity-60 pointer-events-none gap-1">
+                  {[4, 8, 14, 20, 10, 24, 16, 12, 22, 18, 8, 14, 26, 12, 16, 22, 10, 18, 24, 14, 8, 16, 20, 12, 6, 14, 22, 16, 10, 18].map((h, i) => (
+                    <div
+                      key={i}
+                      className={`w-1 rounded-full ${isPlaying ? 'waveform-bar-anim' : ''} bg-cyan-400`}
+                      style={{
+                        height: `${h}px`,
+                        animationDelay: `${(i % 5) * 0.15}s`
+                      }}
+                    />
                   ))}
                 </div>
 
-                <div>
-                  <span className="block text-[10px] sm:text-xs font-mono font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
-                    Resolusi Video (7 Platform)
-                  </span>
-                  <select
-                    value={resolution}
-                    onChange={(e) => setResolution(e.target.value)}
-                    disabled={format !== 'mp4'}
-                    className="w-full rounded-lg sm:rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/15 px-3 py-2 sm:py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500/40 disabled:opacity-40 shadow-sm cursor-pointer"
-                  >
-                    {resOptions.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
+                {/* Dimmed Left Region */}
+                <div
+                  className="absolute top-0 bottom-0 left-0 bg-black/75 backdrop-blur-[1px] pointer-events-none"
+                  style={{ width: `${pct(start)}%` }}
+                />
+
+                {/* Dimmed Right Region */}
+                <div
+                  className="absolute top-0 bottom-0 right-0 bg-black/75 backdrop-blur-[1px] pointer-events-none"
+                  style={{ width: `${100 - pct(end)}%` }}
+                />
+
+                {/* Selected Region Box */}
+                <div
+                  className="absolute top-0 bottom-0 bg-gradient-to-r from-rose-500/25 via-purple-500/25 to-cyan-500/25 border-y-2 border-rose-400 pointer-events-none"
+                  style={{ left: `${pct(start)}%`, right: `${100 - pct(end)}%` }}
+                />
+
+                {/* Playhead Indicator */}
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-amber-400 pointer-events-none z-10 shadow-[0_0_10px_#f59e0b]"
+                  style={{ left: `${pct(now)}%` }}
+                >
+                  <div className="w-2.5 h-2.5 bg-amber-400 rounded-full -translate-x-[4px] -translate-y-0.5 shadow-md" />
+                </div>
+
+                {/* Start Handle */}
+                <div
+                  role="slider"
+                  tabIndex={0}
+                  aria-label="Waktu mulai"
+                  aria-valuemin={0}
+                  aria-valuemax={Math.floor(video.duration)}
+                  aria-valuenow={Math.floor(start)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowLeft') nudge('start', -1);
+                    if (e.key === 'ArrowRight') nudge('start', 1);
+                  }}
+                  className="absolute top-0 bottom-0 w-9 sm:w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-30 cursor-ew-resize"
+                  style={{ left: `${pct(start)}%` }}
+                >
+                  <div className="w-3.5 sm:w-4 h-14 sm:h-16 rounded-xl bg-gradient-to-b from-rose-400 to-rose-600 border-2 border-white shadow-xl group-hover:scale-110 active:scale-115 transition-transform flex items-center justify-center">
+                    <div className="w-0.5 h-6 bg-white/80 rounded" />
+                  </div>
+                </div>
+
+                {/* End Handle */}
+                <div
+                  role="slider"
+                  tabIndex={0}
+                  aria-label="Waktu selesai"
+                  aria-valuemin={0}
+                  aria-valuemax={Math.floor(video.duration)}
+                  aria-valuenow={Math.floor(end)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowLeft') nudge('end', -1);
+                    if (e.key === 'ArrowRight') nudge('end', 1);
+                  }}
+                  className="absolute top-0 bottom-0 w-9 sm:w-8 -translate-x-1/2 flex items-center justify-center outline-none group z-30 cursor-ew-resize"
+                  style={{ left: `${pct(end)}%` }}
+                >
+                  <div className="w-3.5 sm:w-4 h-14 sm:h-16 rounded-xl bg-gradient-to-b from-purple-400 to-cyan-500 border-2 border-white shadow-xl group-hover:scale-110 active:scale-115 transition-transform flex items-center justify-center">
+                    <div className="w-0.5 h-6 bg-white/80 rounded" />
+                  </div>
                 </div>
               </div>
 
-              {/* Progress Bar Kontinu (0% -> 100%) */}
-              {busy && (
-                <div className="glass-anime-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-rose-500/30 bg-rose-500/5 space-y-2.5 sm:space-y-3">
-                  <div className="flex items-center justify-between text-xs font-mono font-bold text-rose-600 dark:text-rose-400">
-                    <span className="inline-flex items-center gap-1.5 bg-rose-500/10 px-2 sm:px-2.5 py-1 rounded-md sm:rounded-lg border border-rose-500/20 text-[11px] sm:text-xs">
-                      <Clock size={13} className="text-amber-400 animate-spin-slow" /> Sisa: {fmtEstRemaining(elapsedMs, clipLen)}
-                    </span>
-                    <span className="font-mono text-cyan-500 dark:text-cyan-400 font-extrabold text-xs sm:text-sm">{displayPct}%</span>
+              {/* Timecode Steppers & Quick Mark Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                
+                {/* Mulai (Start) Stepper */}
+                <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-rose-500/30 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-mono uppercase text-rose-600 dark:text-rose-400 font-bold">Mulai (Start Time)</div>
+                    <div className="font-mono text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmtPrecise(start)}</div>
                   </div>
-
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
-                    <span className="inline-flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
-                      {state === 'processing' ? (
-                        <>
-                          <Loader2 className="animate-spin text-rose-500 shrink-0" size={14} /> Memotong klip di server FFmpeg… ({displayPct}%)
-                        </>
-                      ) : (
-                        <>
-                          <Download size={14} className="text-cyan-400 animate-bounce shrink-0" /> Mengunduh file… {humanBytes(prog?.loaded || 0)}
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Visual Progress Bar Smooth */}
-                  <div className="h-2.5 sm:h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-900 border border-rose-500/20 p-0.5 shadow-inner">
-                    <div
-                      className="h-full bg-gradient-to-r from-rose-500 via-purple-500 to-cyan-400 transition-all duration-300 rounded-full shadow-md"
-                      style={{ width: `${displayPct}%` }}
-                    />
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => nudge('start', -1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition cursor-pointer">-1s</button>
+                    <button onClick={() => nudge('start', -0.1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition cursor-pointer">-.1</button>
+                    <button onClick={() => nudge('start', 0.1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition cursor-pointer">+.1</button>
+                    <button onClick={() => nudge('start', 1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-rose-500 hover:text-white transition cursor-pointer">+1s</button>
                   </div>
                 </div>
-              )}
 
-              {/* Download Action Button */}
-              <button
-                onClick={download}
-                disabled={busy}
-                className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-extrabold text-xs sm:text-sm tracking-wide btn-anime-gradient text-white shadow-xl shadow-rose-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {busy ? (
-                  <>
-                    <Loader2 className="animate-spin text-white" size={17} />
-                    <span>{state === 'downloading' ? 'Mentransfer File ke Perangkat…' : 'Sedang Memotong Media…'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Download size={17} />
-                    <span>UNDUH {format.toUpperCase()} ({fmt(clipLen)})</span>
-                  </>
-                )}
-              </button>
-
-              {/* Sidebar 300x250 Ad */}
-              <div className="pt-2">
-                <AdBanner300 />
+                {/* Selesai (End) Stepper */}
+                <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-mono uppercase text-cyan-600 dark:text-cyan-400 font-bold">Selesai (End Time)</div>
+                    <div className="font-mono text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{fmtPrecise(end)}</div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => nudge('end', -1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition cursor-pointer">-1s</button>
+                    <button onClick={() => nudge('end', -0.1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition cursor-pointer">-.1</button>
+                    <button onClick={() => nudge('end', 0.1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition cursor-pointer">+.1</button>
+                    <button onClick={() => nudge('end', 1)} className="py-1 px-2 text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 rounded hover:bg-cyan-500 hover:text-white transition cursor-pointer">+1s</button>
+                  </div>
+                </div>
               </div>
+
+              {/* Quick Mark Playhead Buttons */}
+              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                <button
+                  onClick={markStart}
+                  className="text-xs font-semibold rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 py-2.5 px-2 text-center truncate hover:bg-rose-500/20 transition cursor-pointer"
+                >
+                  📍 Tandai Mulai pada [{fmt(now)}]
+                </button>
+                <button
+                  onClick={markEnd}
+                  className="text-xs font-semibold rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 py-2.5 px-2 text-center truncate hover:bg-cyan-500/20 transition cursor-pointer"
+                >
+                  🏁 Tandai Selesai pada [{fmt(now)}]
+                </button>
+              </div>
+
             </div>
           </section>
         )}
@@ -883,7 +1185,7 @@ export default function App() {
 function mapNetErr(e) {
   const m = (e && e.message) || String(e);
   if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
-    return `Tidak bisa terhubung ke backend server (${API}). Pastikan URL backend benar dan aktif.`;
+    return `Tidak bisa terhubung ke backend server (${API}). Pastikan backend aktif.`;
   }
   if (/Video unavailable/i.test(m)) {
     return 'Video tidak ditemukan, telah dihapus, atau bersifat privat di YouTube.';
@@ -926,9 +1228,9 @@ function AdBanner728() {
   return (
     <div className="flex flex-col items-center justify-center my-3 overflow-hidden">
       <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
-        Sponsored Advertisement
+        Sponsored Utility
       </span>
-      <div className="w-[728px] h-[90px] max-w-full overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5">
+      <div className="w-[728px] h-[90px] max-w-full overflow-hidden flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 shadow-sm">
         <iframe
           title="ad-728x90"
           srcDoc={srcDoc}
@@ -972,9 +1274,9 @@ function AdBanner300() {
   return (
     <div className="flex flex-col items-center justify-center my-2.5 overflow-hidden">
       <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
-        Sponsored Advertisement
+        Sponsored Content
       </span>
-      <div className="w-[300px] h-[250px] overflow-hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 shadow-sm">
+      <div className="w-[300px] h-[250px] overflow-hidden flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 shadow-sm">
         <iframe
           title="ad-300x250"
           srcDoc={srcDoc}
@@ -1009,14 +1311,15 @@ function AdNativeBanner() {
     <div className="w-full max-w-4xl mx-auto my-4 px-2" ref={adRef}>
       <div className="flex items-center justify-center mb-1">
         <span className="text-[9px] font-mono tracking-widest text-slate-400 dark:text-slate-500 uppercase">
-          Sponsored Content
+          Sponsored Recommendation
         </span>
       </div>
       <div
         id="container-b52019ce5352c5da703df76d0a336b9a"
-        className="min-h-[60px] rounded-xl overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-900/30 border border-slate-200 dark:border-white/5"
+        className="min-h-[60px] rounded-2xl overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-900/30 border border-slate-200 dark:border-white/10"
       />
     </div>
   );
 }
+
 

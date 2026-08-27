@@ -19,7 +19,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Aesthetic Anime Modern Simple Design System (Cyber-Sakura & Glass Minimal)*/
+/*  Studio Pro Dark & Modern Cyber Glassmorphism Design System (v3.5)         */
 /* -------------------------------------------------------------------------- */
 
 :root {
@@ -29,10 +29,11 @@
   --anime-amber: #FBBF24;
   
   --bg-primary: #F8FAFC;
+  --bg-secondary: #F1F5F9;
   --text-primary: #0F172A;
-  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-bg: rgba(255, 255, 255, 0.88);
   --card-border: rgba(226, 232, 240, 0.9);
-  --card-shadow: 0 12px 36px -8px rgba(15, 23, 42, 0.08);
+  --card-shadow: 0 16px 40px -10px rgba(15, 23, 42, 0.08);
   --sprocket: rgba(100, 116, 139, 0.2);
 }
 
@@ -42,11 +43,12 @@
   --anime-purple: #8B5CF6;
   --anime-amber: #F59E0B;
 
-  --bg-primary: #080A12;
+  --bg-primary: #080B14;
+  --bg-secondary: #0F1423;
   --text-primary: #F8FAFC;
-  --card-bg: rgba(13, 17, 30, 0.82);
+  --card-bg: rgba(15, 20, 35, 0.84);
   --card-border: rgba(255, 255, 255, 0.08);
-  --card-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7);
+  --card-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.75);
   --sprocket: rgba(255, 255, 255, 0.15);
 }
 
@@ -55,12 +57,12 @@ body {
   color: var(--text-primary);
 }
 
-/* Background Ambient Anime Mesh Grid */
+/* Ambient Studio Pro Mesh Grid Background */
 .anime-modern-bg {
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(244, 63, 94, 0.07) 0%, transparent 45%),
-    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 15% 15%, rgba(244, 63, 94, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.07) 0%, transparent 50%),
     linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
@@ -68,15 +70,15 @@ body {
 
 .dark .anime-modern-bg {
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(244, 63, 94, 0.14) 0%, transparent 50%),
-    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.14) 0%, transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.09) 0%, transparent 55%),
+    radial-gradient(circle at 15% 15%, rgba(244, 63, 94, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.10) 0%, transparent 55%),
     linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
 }
 
-/* Ambient Floating Anime Glow Orb */
+/* Ambient Floating Glow Orb */
 @keyframes anime-glow-drift {
   0%, 100% {
     transform: translate(-50%, -15%) scale(1);
@@ -92,15 +94,15 @@ body {
   position: fixed;
   top: -240px;
   left: 50%;
-  width: 820px;
-  height: 600px;
+  width: 860px;
+  height: 620px;
   transform: translateX(-50%);
   border-radius: 9999px;
   background: radial-gradient(
     circle,
-    rgba(244, 63, 94, 0.2) 0%,
-    rgba(139, 92, 246, 0.16) 35%,
-    rgba(6, 182, 212, 0.14) 65%,
+    rgba(244, 63, 94, 0.22) 0%,
+    rgba(139, 92, 246, 0.18) 35%,
+    rgba(6, 182, 212, 0.15) 65%,
     transparent 100%
   );
   filter: blur(95px);
@@ -109,8 +111,9 @@ body {
   animation: anime-glow-drift 12s ease-in-out infinite alternate;
 }
 
-/* Glassmorphic Anime Card */
-.glass-anime-card {
+/* Glassmorphic Studio Cards */
+.glass-anime-card,
+.glass-studio-card {
   background: var(--card-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -119,11 +122,12 @@ body {
   transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-anime-card:hover {
+.glass-anime-card:hover,
+.glass-studio-card:hover {
   border-color: rgba(244, 63, 94, 0.35);
 }
 
-/* Filmstrip Aesthetic Trimmer Track */
+/* Filmstrip Aesthetic & Storyboard Trimmer Track */
 .filmstrip-track {
   background-image:
     repeating-linear-gradient(90deg, var(--sprocket) 0 6px, transparent 6px 22px),
@@ -134,21 +138,64 @@ body {
   background-repeat: repeat-x, repeat-x, repeat;
 }
 
-/* Anime Shimmer Glow Button */
+/* Animated Audio Waveform Bars */
+@keyframes wave-bounce {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+.waveform-bar-anim {
+  animation: wave-bounce 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+/* Shimmer Glow Buttons */
 @keyframes anime-shimmer {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-.btn-anime-gradient {
+.btn-anime-gradient,
+.btn-studio-gradient {
   background: linear-gradient(135deg, #F43F5E 0%, #A855F7 50%, #06B6D4 100%);
   background-size: 200% 200%;
   animation: anime-shimmer 6s ease infinite;
 }
 
-.btn-anime-gradient:hover {
-  box-shadow: 0 0 26px -4px rgba(244, 63, 94, 0.55), 0 0 14px -2px rgba(6, 182, 212, 0.4);
+.btn-anime-gradient:hover,
+.btn-studio-gradient:hover {
+  box-shadow: 0 0 28px -4px rgba(244, 63, 94, 0.55), 0 0 16px -2px rgba(6, 182, 212, 0.4);
+}
+
+/* Dynamic Platform Glow Utilities */
+.glow-youtube {
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 0 25px -4px rgba(239, 68, 68, 0.35) !important;
+}
+.glow-tiktok {
+  border-color: rgba(6, 182, 212, 0.6) !important;
+  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.35) !important;
+}
+.glow-douyin {
+  border-color: rgba(236, 72, 153, 0.6) !important;
+  box-shadow: 0 0 25px -4px rgba(236, 72, 153, 0.35) !important;
+}
+.glow-instagram {
+  border-color: rgba(217, 70, 239, 0.6) !important;
+  box-shadow: 0 0 25px -4px rgba(217, 70, 239, 0.35) !important;
+}
+.glow-facebook {
+  border-color: rgba(59, 130, 246, 0.6) !important;
+  box-shadow: 0 0 25px -4px rgba(59, 130, 246, 0.35) !important;
+}
+.glow-x {
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 0 0 25px -4px rgba(139, 92, 246, 0.35) !important;
+}
+.glow-rednote {
+  border-color: rgba(244, 63, 94, 0.6) !important;
+  box-shadow: 0 0 25px -4px rgba(244, 63, 94, 0.35) !important;
 }
 
 /* Entrance Animation */
@@ -194,7 +241,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .anim-fade-up,
   .anime-hero-orb,
-  .btn-anime-gradient {
+  .btn-anime-gradient,
+  .btn-studio-gradient,
+  .waveform-bar-anim {
     animation: none;
   }
 }
+

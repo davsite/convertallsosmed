@@ -94,7 +94,7 @@ export default function App() {
   const [videoError, setVideoError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
-  const [aspectMode, setAspectMode] = useState('original'); // 'original' | '9:16' | '1:1'
+  const [videoRatio, setVideoRatio] = useState('Otomatis');
   const [toast, setToast] = useState('');
   const [prog, setProg] = useState(null);
   const [backendPing, setBackendPing] = useState({ online: true, latency: 38 });
@@ -331,6 +331,7 @@ export default function App() {
         canonicalUrl: d.canonical_url || url.trim()
       });
       setStart(0); setEnd(dur); setNow(0); setResolution('best'); setFormat('mp4');
+      setVideoRatio('Otomatis'); setIsVertical(false);
       setState('preview');
     } catch (e) {
       setError(mapNetErr(e)); setState('error');
@@ -632,354 +633,165 @@ export default function App() {
         {/* STUDIO WORKSPACE (PREVIEW & TRIMMING CONTROLS)                 */}
         {/* ============================================================== */}
         {(state === 'preview' || busy) && (
-          <section className="anim-fade-up space-y-4 sm:space-y-6 max-w-6xl mx-auto">
+          <section className="anim-fade-up space-y-4 sm:space-y-5 max-w-4xl mx-auto">
             
-            {/* Top 2-Column Grid: Video Player + Settings Panel */}
-            <div className="grid lg:grid-cols-12 gap-4 sm:gap-6">
+            {/* ============================================================== */}
+            {/* 1. STUDIO VIDEO PREVIEW CARD (AUTO ASPECT RATIO)               */}
+            {/* ============================================================== */}
+            <div className="glass-studio-card rounded-2xl overflow-hidden bg-black/90 shadow-2xl border border-slate-200/80 dark:border-white/10">
               
-              {/* LEFT COLUMN: Video Player & Aspect Ratio Screen (7 Cols) */}
-              <div className="lg:col-span-7 space-y-3 sm:space-y-3.5">
-                
-                {/* Video Player Card */}
-                <div className={`glass-studio-card rounded-2xl overflow-hidden relative bg-black shadow-2xl transition-all duration-300 ${isVertical ? 'max-w-[280px] sm:max-w-xs md:max-w-sm mx-auto' : 'w-full'}`}>
-                  
-                  {/* Status Bar */}
-                  <div className="px-4 py-2.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between text-[11px] sm:text-xs font-mono text-slate-300">
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                      LIVE PREVIEW
-                    </span>
-                    
-                    {/* Aspect Ratio Switcher Pills */}
-                    <div className="flex items-center gap-1 bg-black/50 p-0.5 rounded-lg border border-white/10 text-[10px]">
-                      <button
-                        onClick={() => setAspectMode('original')}
-                        className={`px-2 py-0.5 rounded-md font-bold transition cursor-pointer ${aspectMode === 'original' ? 'bg-rose-500 text-white' : 'text-slate-400 hover:text-white'}`}
-                      >
-                        16:9
-                      </button>
-                      <button
-                        onClick={() => setAspectMode('9:16')}
-                        className={`px-2 py-0.5 rounded-md font-bold transition cursor-pointer ${aspectMode === '9:16' ? 'bg-cyan-500 text-black' : 'text-slate-400 hover:text-white'}`}
-                      >
-                        9:16 Reels
-                      </button>
-                      <button
-                        onClick={() => setAspectMode('1:1')}
-                        className={`px-2 py-0.5 rounded-md font-bold transition cursor-pointer ${aspectMode === '1:1' ? 'bg-purple-500 text-white' : 'text-slate-400 hover:text-white'}`}
-                      >
-                        1:1
-                      </button>
-                    </div>
-
-                    {active && <span className="font-bold text-cyan-400">{active.name}</span>}
-                  </div>
-
-                  {/* Player Container */}
-                  <div className="relative overflow-hidden bg-black flex items-center justify-center">
-                    
-                    {/* 9:16 Aspect Ratio Visual Overlay Guide */}
-                    {aspectMode === '9:16' && (
-                      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[34%] border-2 border-dashed border-cyan-400/80 bg-cyan-500/5 z-20 pointer-events-none flex flex-col justify-between p-2">
-                        <span className="self-center bg-cyan-500 text-black text-[9px] font-mono font-black px-2 py-0.5 rounded shadow">
-                          REELS / SHORTS 9:16
-                        </span>
-                        <span className="self-center text-[8px] font-mono text-cyan-300/80">Crop Guide</span>
-                      </div>
-                    )}
-
-                    {/* 1:1 Aspect Ratio Visual Overlay Guide */}
-                    {aspectMode === '1:1' && (
-                      <div className="absolute aspect-square inset-y-0 left-1/2 -translate-x-1/2 border-2 border-dashed border-purple-400/80 bg-purple-500/5 z-20 pointer-events-none flex flex-col justify-between p-2">
-                        <span className="self-center bg-purple-500 text-white text-[9px] font-mono font-black px-2 py-0.5 rounded shadow">
-                          SQUARE 1:1 (FEED)
-                        </span>
-                      </div>
-                    )}
-
-                    {videoError ? (
-                      <div className="p-6 sm:p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]">
-                        <AlertCircle size={36} className="text-rose-400 animate-bounce" />
-                        <p className="text-xs sm:text-sm font-semibold text-slate-100">
-                          Stream preview dibatasi oleh protokol keamanan CDN.
-                        </p>
-                        <p className="text-[11px] sm:text-xs text-slate-400 max-w-xs leading-relaxed">
-                          Anda tetap dapat memotong dan mengunduh video ini secara frame-accurate via server FFmpeg!
-                        </p>
-                        <button
-                          onClick={fetchInfo}
-                          className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
-                        >
-                          <RefreshCw size={13} /> Coba Muat Ulang
-                        </button>
-                      </div>
-                    ) : (
-                      <video
-                        ref={videoRef}
-                        src={streamSrc}
-                        poster={video.thumbnail}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        onLoadedMetadata={(e) => {
-                          const v = e.target;
-                          if (v.videoWidth && v.videoHeight) {
-                            setIsVertical(v.videoHeight > v.videoWidth);
-                          }
-                          if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
-                            const trueDur = Number(v.duration.toFixed(2));
-                            setVideo((prev) => ({ ...prev, duration: trueDur }));
-                            setEnd((prevEnd) => {
-                              if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
-                                return trueDur;
-                              }
-                              return prevEnd;
-                            });
-                          }
-                        }}
-                        onDurationChange={(e) => {
-                          const v = e.target;
-                          if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
-                            const trueDur = Number(v.duration.toFixed(2));
-                            setVideo((prev) => ({ ...prev, duration: trueDur }));
-                            setEnd((prevEnd) => {
-                              if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
-                                return trueDur;
-                              }
-                              return prevEnd;
-                            });
-                          }
-                        }}
-                        onTimeUpdate={(e) => {
-                          setNow(e.target.currentTime);
-                        }}
-                        onError={() => setVideoError(true)}
-                        className={`w-full bg-black object-contain transition-all duration-300 ${isVertical ? 'max-h-[46vh] sm:max-h-[56vh] mx-auto' : 'max-h-[38vh] sm:max-h-[48vh] lg:max-h-[52vh]'}`}
-                      />
-                    )}
-                  </div>
+              {/* Player Header / Status Bar */}
+              <div className="px-4 py-2.5 sm:py-3 bg-slate-900/95 border-b border-white/10 flex items-center justify-between flex-wrap gap-2 text-[11px] sm:text-xs font-mono text-slate-300">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_#f43f5e]" />
+                  <span className="font-bold tracking-wider text-slate-200">STUDIO PREVIEW</span>
                 </div>
-
-                {/* Video Title & Meta Card */}
-                <div className="glass-studio-card p-3.5 sm:p-4 rounded-2xl flex items-start gap-3">
+                
+                {/* Dynamic Auto Aspect Ratio Badge */}
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] sm:text-[11px] font-mono font-bold shadow-sm">
+                    <Monitor size={12} className="text-cyan-400" />
+                    <span>Rasio Otomatis: {videoRatio}</span>
+                  </span>
+                  
                   {active && (
-                    <span className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 shrink-0">
-                      <img src={active.logo} className="w-5 h-5 rounded-md object-cover shadow-sm" alt={active.name} />
+                    <span className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg border ${active.badgeClass}`}>
+                      <img src={active.logo} className="w-3.5 h-3.5 rounded-sm object-cover" alt={active.name} />
+                      <span>{active.name}</span>
                     </span>
                   )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <h2 className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm leading-snug break-words line-clamp-2">
-                        {video.title}
-                      </h2>
-                      {video.canonicalUrl && (
-                        <a
-                          href={video.canonicalUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[11px] font-mono text-slate-400 hover:text-cyan-400 inline-flex items-center gap-1 shrink-0"
-                        >
-                          <ExternalLink size={12} /> <span className="hidden sm:inline">Buka Asli</span>
-                        </a>
-                      )}
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] sm:text-xs font-mono text-slate-500 dark:text-slate-400">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock size={13} className="text-rose-500" /> Total: {fmt(video.duration)}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold">
-                        <Scissors size={13} /> Klip: {fmt(clipLen)}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold">
-                        <Film size={13} /> ~{estSizeMb} MB
-                      </span>
-                    </div>
-                  </div>
                 </div>
-
               </div>
 
-              {/* RIGHT COLUMN: Format Suite & Download Card (5 Cols) */}
-              <div className="lg:col-span-5 space-y-3 sm:space-y-3.5">
-                
-                {/* Format Suite Card */}
-                <div className="glass-studio-card p-4 sm:p-5 rounded-2xl space-y-3.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] sm:text-xs font-mono font-bold uppercase text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                      <Sliders size={13} /> FORMAT KELUARAN
-                    </span>
-                    <span className="text-[10px] font-mono text-emerald-500 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      FFMPEG FAST
-                    </span>
-                  </div>
-
-                  {/* Format 3-Tab Selector */}
-                  <div className="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-white/10">
+              {/* Responsive Video Container - Automatically Fits Vertical (TikTok/Reels) or Landscape (YouTube) */}
+              <div className="relative overflow-hidden bg-black flex items-center justify-center p-2 sm:p-3 min-h-[220px] sm:min-h-[300px]">
+                {videoError ? (
+                  <div className="p-6 sm:p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]">
+                    <AlertCircle size={36} className="text-rose-400 animate-bounce" />
+                    <p className="text-xs sm:text-sm font-semibold text-slate-100">
+                      Stream preview dibatasi oleh protokol keamanan CDN platform.
+                    </p>
+                    <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-relaxed">
+                      Anda tetap dapat memotong ({fmt(start)} → {fmt(end)}) dan mengunduh video ini secara frame-accurate via server FFmpeg!
+                    </p>
                     <button
-                      onClick={() => setFormat('mp4')}
-                      className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                        format === 'mp4'
-                          ? 'btn-studio-gradient text-white shadow-md'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-rose-500'
-                      }`}
+                      onClick={fetchInfo}
+                      className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
                     >
-                      <Tv size={15} className="mb-1" />
-                      <span>MP4 Video</span>
-                    </button>
-                    <button
-                      onClick={() => setFormat('mp3')}
-                      className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                        format === 'mp3'
-                          ? 'btn-studio-gradient text-white shadow-md'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-purple-500'
-                      }`}
-                    >
-                      <Volume2 size={15} className="mb-1" />
-                      <span>MP3 Audio</span>
-                    </button>
-                    <button
-                      onClick={() => setFormat('thumbnail')}
-                      className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                        format === 'thumbnail'
-                          ? 'btn-studio-gradient text-white shadow-md'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-cyan-500'
-                      }`}
-                    >
-                      <ImageIcon size={15} className="mb-1" />
-                      <span>Cover HD</span>
+                      <RefreshCw size={13} /> Coba Muat Ulang
                     </button>
                   </div>
+                ) : (
+                  <video
+                    ref={videoRef}
+                    src={streamSrc}
+                    poster={video.thumbnail}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    onLoadedMetadata={(e) => {
+                      const v = e.target;
+                      if (v.videoWidth && v.videoHeight) {
+                        const w = v.videoWidth;
+                        const h = v.videoHeight;
+                        const isVert = h > w;
+                        setIsVertical(isVert);
+                        const r = w / h;
+                        if (r <= 0.65) {
+                          setVideoRatio('9:16 (Vertikal / Reels)');
+                        } else if (r >= 1.45) {
+                          setVideoRatio('16:9 (Lanskap)');
+                        } else if (Math.abs(r - 1) < 0.2) {
+                          setVideoRatio('1:1 (Persegi)');
+                        } else if (isVert) {
+                          setVideoRatio(`${w}x${h} (Vertikal)`);
+                        } else {
+                          setVideoRatio(`${w}x${h} (Lanskap)`);
+                        }
+                      }
+                      if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
+                        const trueDur = Number(v.duration.toFixed(2));
+                        setVideo((prev) => ({ ...prev, duration: trueDur }));
+                        setEnd((prevEnd) => {
+                          if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
+                            return trueDur;
+                          }
+                          return prevEnd;
+                        });
+                      }
+                    }}
+                    onDurationChange={(e) => {
+                      const v = e.target;
+                      if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
+                        const trueDur = Number(v.duration.toFixed(2));
+                        setVideo((prev) => ({ ...prev, duration: trueDur }));
+                        setEnd((prevEnd) => {
+                          if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
+                            return trueDur;
+                          }
+                          return prevEnd;
+                        });
+                      }
+                    }}
+                    onTimeUpdate={(e) => setNow(e.target.currentTime)}
+                    onError={() => setVideoError(true)}
+                    className={`mx-auto rounded-xl object-contain bg-black shadow-2xl transition-all duration-300 ${
+                      isVertical
+                        ? 'max-h-[48vh] sm:max-h-[56vh] max-w-[280px] sm:max-w-xs md:max-w-sm w-auto'
+                        : 'max-h-[40vh] sm:max-h-[50vh] w-full max-w-2xl'
+                    }`}
+                  />
+                )}
+              </div>
 
-                  {/* Resolution selector for MP4 */}
-                  {format === 'mp4' && (
-                    <div className="anim-fade-up">
-                      <label className="block text-[10px] font-mono font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
-                        Resolusi Video (7 Platform)
-                      </label>
-                      <select
-                        value={resolution}
-                        onChange={(e) => setResolution(e.target.value)}
-                        className="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/15 px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500/40 shadow-sm cursor-pointer"
+              {/* Video Title & Meta Bar */}
+              <div className="p-3.5 sm:p-4 bg-slate-900/60 border-t border-white/10 flex items-start gap-3">
+                {active && (
+                  <span className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 shrink-0">
+                    <img src={active.logo} className="w-5 h-5 rounded-md object-cover shadow-sm" alt={active.name} />
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="font-bold text-slate-100 text-xs sm:text-sm leading-snug break-words line-clamp-2">
+                      {video.title}
+                    </h2>
+                    {video.canonicalUrl && (
+                      <a
+                        href={video.canonicalUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] font-mono text-slate-400 hover:text-cyan-400 inline-flex items-center gap-1 shrink-0"
                       >
-                        {resOptions.map((o) => (
-                          <option key={o.value} value={o.value}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Audio Format Info for MP3 */}
-                  {format === 'mp3' && (
-                    <div className="anim-fade-up p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 font-mono flex items-center gap-2">
-                      <Music size={15} className="text-purple-500 shrink-0" />
-                      <span>Ekstraksi audio murni <b>320kbps Lossless HQ</b> tanpa watermark video.</span>
-                    </div>
-                  )}
-
-                  {/* Thumbnail Info */}
-                  {format === 'thumbnail' && (
-                    <div className="anim-fade-up p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-700 dark:text-cyan-300 font-mono flex items-center gap-2">
-                      <Camera size={15} className="text-cyan-500 shrink-0" />
-                      <span>Unduh gambar sampul cover resolusi tinggi asli (Original HD JPG).</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Real-time Clip Metric & Download Card */}
-                <div className="glass-studio-card p-4 sm:p-5 rounded-2xl space-y-3.5">
-                  <div className="space-y-2 text-xs font-mono">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Rentang Waktu:</span>
-                      <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtPrecise(start)} → {fmtPrecise(end)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Estimasi Ukuran:</span>
-                      <span className="text-cyan-600 dark:text-cyan-400 font-bold">~{estSizeMb} MB</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Kecepatan Server:</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">Instan ({backendPing.latency}ms)</span>
-                    </div>
-                  </div>
-
-                  {/* Progress Indicator */}
-                  {busy && (
-                    <div className="anim-fade-up p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-mono font-bold text-rose-600 dark:text-rose-400">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Clock size={13} className="text-amber-400 animate-spin-slow" /> Sisa: {fmtEstRemaining(elapsedMs, clipLen)}
-                        </span>
-                        <span className="text-cyan-500 dark:text-cyan-400 font-extrabold">{displayPct}%</span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
-                        <span className="inline-flex items-center gap-1.5 text-[11px]">
-                          {state === 'processing' ? (
-                            <>
-                              <Loader2 className="animate-spin text-rose-500 shrink-0" size={13} /> Memproses di FFmpeg ({displayPct}%)…
-                            </>
-                          ) : (
-                            <>
-                              <Download size={13} className="text-cyan-400 animate-bounce shrink-0" /> Mengunduh file… {humanBytes(prog?.loaded || 0)}
-                            </>
-                          )}
-                        </span>
-                      </div>
-
-                      <div className="h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-900 border border-rose-500/20 p-0.5 shadow-inner">
-                        <div
-                          className="h-full bg-gradient-to-r from-rose-500 via-purple-500 to-cyan-400 transition-all duration-300 rounded-full shadow-md"
-                          style={{ width: `${displayPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Big Glowing Action Button */}
-                  <button
-                    onClick={download}
-                    disabled={busy}
-                    className="w-full py-3.5 sm:py-4 rounded-xl font-display font-black text-xs sm:text-sm tracking-wide btn-studio-gradient text-white shadow-xl shadow-rose-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {busy ? (
-                      <>
-                        <Loader2 className="animate-spin text-white" size={17} />
-                        <span>{state === 'downloading' ? 'Mentransfer File ke Perangkat…' : 'Sedang Memotong Media…'}</span>
-                      </>
-                    ) : format === 'thumbnail' ? (
-                      <>
-                        <ImageIcon size={17} />
-                        <span>UNDUH COVER HD (JPG)</span>
-                      </>
-                    ) : (
-                      <>
-                        <Download size={17} />
-                        <span>UNDUH {format.toUpperCase()} ({fmt(clipLen)})</span>
-                      </>
+                        <ExternalLink size={12} /> <span className="hidden sm:inline">Buka Asli</span>
+                      </a>
                     )}
-                  </button>
-
-                  {/* Sidebar 300x250 Ad */}
-                  <div className="pt-1">
-                    <AdBanner300 />
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] sm:text-xs font-mono text-slate-400">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock size={13} className="text-rose-500" /> Total Durasi: {fmt(video.duration)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-rose-400 font-bold">
+                      <Scissors size={13} /> Durasi Klip: {fmt(clipLen)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-cyan-400 font-semibold">
+                      <Film size={13} /> Estimasi: ~{estSizeMb} MB
+                    </span>
                   </div>
                 </div>
-
               </div>
             </div>
 
             {/* ============================================================== */}
-            {/* BOTTOM FULL-WIDTH STUDIO STORYBOARD TIMELINE                   */}
+            {/* 2. FITUR PANGKAS VIDEO (TIMELINE TEPAT DI BAWAH PREVIEW!)      */}
             {/* ============================================================== */}
-            <div className="glass-studio-card p-4 sm:p-5 rounded-2xl space-y-4 border border-rose-500/25">
+            <div className="glass-studio-card p-4 sm:p-5 rounded-2xl space-y-4 border border-rose-500/30 shadow-2xl">
               
               {/* Timeline Header & Quick Presets */}
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                    <Film size={15} /> TIMELINE FRAME STORYBOARD & WAVEFORM
+                    <Scissors size={15} /> FITUR PANGKAS VIDEO & AUDIO WAVEFORM
                   </span>
                   <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                     {fmtPrecise(clipLen)}
@@ -1012,7 +824,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Visual Filmstrip & Storyboard Track */}
+              {/* Visual Storyboard & Waveform Track */}
               <div
                 ref={trackRef}
                 onPointerDown={beginDrag}
@@ -1118,7 +930,6 @@ export default function App() {
 
               {/* Timecode Steppers & Quick Mark Buttons */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                
                 {/* Mulai (Start) Stepper */}
                 <div className="bg-slate-100/80 dark:bg-slate-900/80 border border-rose-500/30 rounded-xl p-3 flex items-center justify-between">
                   <div>
@@ -1164,6 +975,183 @@ export default function App() {
                 </button>
               </div>
 
+            </div>
+
+            {/* ============================================================== */}
+            {/* 3. FORMAT SUITE & TOMBOL UNDUH                                 */}
+            {/* ============================================================== */}
+            <div className="grid md:grid-cols-12 gap-4">
+              
+              {/* Left: Format Selector (7 Cols) */}
+              <div className="md:col-span-7 glass-studio-card p-4 sm:p-5 rounded-2xl space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] sm:text-xs font-mono font-bold uppercase text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                    <Sliders size={13} /> PILIH FORMAT KELUARAN
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-500 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    FFMPEG FAST
+                  </span>
+                </div>
+
+                {/* Format 3-Tab Selector */}
+                <div className="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-white/10">
+                  <button
+                    onClick={() => setFormat('mp4')}
+                    className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      format === 'mp4'
+                        ? 'btn-studio-gradient text-white shadow-md'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-rose-500'
+                    }`}
+                  >
+                    <Tv size={15} className="mb-1" />
+                    <span>MP4 Video</span>
+                  </button>
+                  <button
+                    onClick={() => setFormat('mp3')}
+                    className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      format === 'mp3'
+                        ? 'btn-studio-gradient text-white shadow-md'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-purple-500'
+                    }`}
+                  >
+                    <Volume2 size={15} className="mb-1" />
+                    <span>MP3 Audio</span>
+                  </button>
+                  <button
+                    onClick={() => setFormat('thumbnail')}
+                    className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      format === 'thumbnail'
+                        ? 'btn-studio-gradient text-white shadow-md'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-cyan-500'
+                    }`}
+                  >
+                    <ImageIcon size={15} className="mb-1" />
+                    <span>Cover HD</span>
+                  </button>
+                </div>
+
+                {/* Resolution selector for MP4 */}
+                {format === 'mp4' && (
+                  <div className="anim-fade-up">
+                    <label className="block text-[10px] font-mono font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                      Resolusi Video (7 Platform)
+                    </label>
+                    <select
+                      value={resolution}
+                      onChange={(e) => setResolution(e.target.value)}
+                      className="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/15 px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500/40 shadow-sm cursor-pointer"
+                    >
+                      {resOptions.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Audio Format Info for MP3 */}
+                {format === 'mp3' && (
+                  <div className="anim-fade-up p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 font-mono flex items-center gap-2">
+                    <Music size={15} className="text-purple-500 shrink-0" />
+                    <span>Ekstraksi audio murni <b>320kbps Lossless HQ</b> tanpa watermark video.</span>
+                  </div>
+                )}
+
+                {/* Thumbnail Info */}
+                {format === 'thumbnail' && (
+                  <div className="anim-fade-up p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-700 dark:text-cyan-300 font-mono flex items-center gap-2">
+                    <Camera size={15} className="text-cyan-500 shrink-0" />
+                    <span>Unduh gambar sampul cover resolusi tinggi asli (Original HD JPG).</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Metrics & Download Button (5 Cols) */}
+              <div className="md:col-span-5 glass-studio-card p-4 sm:p-5 rounded-2xl space-y-3.5 flex flex-col justify-between">
+                <div className="space-y-2 text-xs font-mono">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Rentang Waktu:</span>
+                    <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtPrecise(start)} → {fmtPrecise(end)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Estimasi Ukuran:</span>
+                    <span className="text-cyan-600 dark:text-cyan-400 font-bold">~{estSizeMb} MB</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Kecepatan Server:</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Instan ({backendPing.latency}ms)</span>
+                  </div>
+                </div>
+
+                {/* Progress Indicator */}
+                {busy && (
+                  <div className="anim-fade-up p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-mono font-bold text-rose-600 dark:text-rose-400">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock size={13} className="text-amber-400 animate-spin-slow" /> Sisa: {fmtEstRemaining(elapsedMs, clipLen)}
+                      </span>
+                      <span className="text-cyan-500 dark:text-cyan-400 font-extrabold">{displayPct}%</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      <span className="inline-flex items-center gap-1.5 text-[11px]">
+                        {state === 'processing' ? (
+                          <>
+                            <Loader2 className="animate-spin text-rose-500 shrink-0" size={13} /> Memproses di FFmpeg ({displayPct}%)…
+                          </>
+                        ) : (
+                          <>
+                            <Download size={13} className="text-cyan-400 animate-bounce shrink-0" /> Mengunduh file… {humanBytes(prog?.loaded || 0)}
+                          </>
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-900 border border-rose-500/20 p-0.5 shadow-inner">
+                      <div
+                        className="h-full bg-gradient-to-r from-rose-500 via-purple-500 to-cyan-400 transition-all duration-300 rounded-full shadow-md"
+                        style={{ width: `${displayPct}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Big Action Download Button */}
+                <button
+                  onClick={download}
+                  disabled={busy}
+                  className="w-full py-3.5 sm:py-4 rounded-xl font-display font-black text-xs sm:text-sm tracking-wide btn-studio-gradient text-white shadow-xl shadow-rose-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {busy ? (
+                    <>
+                      <Loader2 className="animate-spin text-white" size={17} />
+                      <span>{state === 'downloading' ? 'Mentransfer File ke Perangkat…' : 'Sedang Memotong Media…'}</span>
+                    </>
+                  ) : format === 'thumbnail' ? (
+                    <>
+                      <ImageIcon size={17} />
+                      <span>UNDUH COVER HD (JPG)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download size={17} />
+                      <span>UNDUH {format.toUpperCase()} ({fmt(clipLen)})</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+            </div>
+
+            {/* Sidebar / Bottom Ad Placement */}
+            <div className="pt-2">
+              <div className="hidden md:block">
+                <AdBanner728 />
+              </div>
+              <div className="block md:hidden">
+                <AdBanner300 />
+              </div>
             </div>
           </section>
         )}

@@ -99,55 +99,81 @@ def _quality_ladder(formats: List[dict]) -> List[dict]:
 # ============================================================================
 
 def fetch_tikwm_info(raw_url: str) -> Optional[Dict[str, Any]]:
-    """Mengambil media tanpa watermark secara instan via Savetik/TikWM API."""
-    urls_to_try = [raw_url]
+    """Mengambil media tanpa watermark secara instan via Savetik/TikWM API multi-endpoint."""
+    clean_target = raw_url.split('?')[0].split('#')[0]
+    urls_to_try = [clean_target, raw_url]
+    
     canonical = resolve_canonical_url(raw_url)
     if canonical and canonical != raw_url:
-        urls_to_try.insert(0, canonical)
+        clean_canonical = canonical.split('?')[0].split('#')[0]
+        urls_to_try.insert(0, clean_canonical)
+        urls_to_try.append(canonical)
 
-    for target in urls_to_try:
-        for attempt in range(2):
-            try:
-                resp = requests.post(
-                    "https://www.tikwm.com/api/",
-                    data={"url": target},
-                    timeout=5.0,
-                    verify=False,
-                    headers={"User-Agent": DESKTOP_UA},
-                )
-                if resp.status_code == 200:
-                    res = resp.json()
-                    if res.get("code") == 0:
-                        data = res.get("data") or {}
-                        video_id = data.get("id")
+    # Cek ID video jika ada
+    vid_match = re.search(r"/video/(\d+)", canonical or raw_url)
+    if vid_match:
+        vid = vid_match.group(1)
+        urls_to_try.insert(0, f"https://www.tiktok.com/@i/video/{vid}")
 
-                        # Gunakan direct proxy mirror TikWM yang anti-timeout di semua ISP
-                        direct_url = None
-                        if video_id:
-                            direct_url = f"https://www.tikwm.com/video/media/play/{video_id}.mp4"
+    seen = set()
+    deduped_urls = []
+    for u in urls_to_try:
+        if u and u not in seen:
+            seen.add(u)
+            deduped_urls.append(u)
 
-                        if not direct_url:
-                            direct_url = data.get("play") or data.get("wmplay")
+    endpoints = ["https://www.tikwm.com/api/", "https://tikwm.com/api/"]
 
-                        if direct_url and direct_url.startswith("//"):
-                            direct_url = "https:" + direct_url
+    for target in deduped_urls:
+        for ep in endpoints:
+            for attempt in range(2):
+                try:
+                    resp = requests.post(
+                        ep,
+                        data={"url": target, "count": 12, "cursor": 0, "web": 1, "hd": 1},
+                        timeout=8.0,
+                        verify=False,
+                        headers={
+                            "User-Agent": DESKTOP_UA,
+                            "Referer": "https://www.tikwm.com/",
+                            "Accept": "application/json, text/javascript, */*; q=0.01",
+                        },
+                    )
+                    if resp.status_code == 200:
+                        res = resp.json()
+                        if res.get("code") == 0:
+                            data = res.get("data") or {}
+                            video_id = data.get("id")
 
-                        if direct_url:
-                            return {
-                                "title": data.get("title") or "Video",
-                                "thumbnail": data.get("cover"),
-                                "duration": int(data.get("duration") or 60),
-                                "direct_url": direct_url,
-                                "canonical_url": canonical or target,
-                                "qualities": _quality_ladder([]),
-                                "stream_headers": {
-                                    "User-Agent": DESKTOP_UA,
-                                    "Referer": "https://www.tikwm.com/"
+                            # Gunakan direct proxy mirror TikWM atau HD play yang anti-timeout
+                            direct_url = None
+                            if video_id:
+                                direct_url = f"https://www.tikwm.com/video/media/play/{video_id}.mp4"
+
+                            if not direct_url:
+                                direct_url = data.get("hdplay") or data.get("play") or data.get("wmplay")
+
+                            if direct_url and direct_url.startswith("//"):
+                                direct_url = "https:" + direct_url
+
+                            if direct_url:
+                                return {
+                                    "title": data.get("title") or "Video TikTok",
+                                    "thumbnail": data.get("cover"),
+                                    "duration": int(data.get("duration") or 60),
+                                    "direct_url": direct_url,
+                                    "canonical_url": canonical or target,
+                                    "qualities": _quality_ladder([]),
+                                    "stream_headers": {
+                                        "User-Agent": DESKTOP_UA,
+                                        "Referer": "https://www.tikwm.com/"
+                                    }
                                 }
-                            }
-            except Exception:
-                if attempt == 0:
-                    time.sleep(0.3)
+                        elif res.get("msg") == "request too fast":
+                            time.sleep(0.4)
+                except Exception:
+                    if attempt == 0:
+                        time.sleep(0.3)
     return None
 
 

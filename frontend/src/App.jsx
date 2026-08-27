@@ -638,15 +638,15 @@ export default function App() {
         {/* STUDIO WORKSPACE (PREVIEW & TRIMMING CONTROLS)                 */}
         {/* ============================================================== */}
         {(state === 'preview' || busy) && (
-          <section className="anim-fade-up space-y-4 sm:space-y-5 max-w-4xl mx-auto">
+          <section className="anim-fade-up space-y-3.5 sm:space-y-4 max-w-3xl mx-auto">
             
             {/* ============================================================== */}
-            {/* 1. STUDIO VIDEO PREVIEW CARD (AUTO ASPECT RATIO)               */}
+            {/* 1. STUDIO VIDEO PREVIEW CARD (AUTO ASPECT RATIO & AUTO REPLAY) */}
             {/* ============================================================== */}
             <div className="glass-studio-card rounded-2xl overflow-hidden bg-black/90 shadow-2xl border border-slate-200/80 dark:border-white/10">
               
               {/* Player Header / Status Bar */}
-              <div className="px-4 py-2.5 sm:py-3 bg-slate-900/95 border-b border-white/10 flex items-center justify-between flex-wrap gap-2 text-[11px] sm:text-xs font-mono text-slate-300">
+              <div className="px-3.5 py-2 sm:py-2.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between flex-wrap gap-2 text-[11px] sm:text-xs font-mono text-slate-300">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_#f43f5e]" />
                   <span className="font-bold tracking-wider text-slate-200">STUDIO PREVIEW</span>
@@ -654,9 +654,9 @@ export default function App() {
                 
                 {/* Dynamic Auto Aspect Ratio Badge */}
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] sm:text-[11px] font-mono font-bold shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] sm:text-[11px] font-mono font-bold shadow-sm">
                     <Monitor size={12} className="text-cyan-400" />
-                    <span>Rasio Otomatis: {videoRatio}</span>
+                    <span>Rasio: {videoRatio}</span>
                   </span>
                   
                   {active && (
@@ -669,25 +669,25 @@ export default function App() {
               </div>
 
               {/* Responsive Video Container - Automatically Fits Vertical (TikTok/Reels) or Landscape (YouTube) */}
-              <div className="relative overflow-hidden bg-black flex items-center justify-center p-2 sm:p-3 min-h-[220px] sm:min-h-[300px]">
+              <div className="relative overflow-hidden bg-black flex items-center justify-center p-1.5 sm:p-2.5 min-h-[160px] sm:min-h-[220px]">
                 {videoError ? (
-                  <div className="p-6 sm:p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]">
-                    <AlertCircle size={36} className="text-rose-400 animate-bounce" />
+                  <div className="p-5 sm:p-6 text-center space-y-2.5 bg-slate-900/95 flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
+                    <AlertCircle size={32} className="text-rose-400 animate-bounce" />
                     <p className="text-xs sm:text-sm font-semibold text-slate-100">
                       Stream preview proxy dibatasi oleh CDN platform.
                     </p>
                     <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-relaxed">
                       Anda tetap dapat memotong ({fmt(start)} → {fmt(end)}) dan mengunduh media frame-accurate melalui server FFmpeg!
                     </p>
-                    <div className="flex items-center gap-2 flex-wrap justify-center pt-2">
+                    <div className="flex items-center gap-2 flex-wrap justify-center pt-1.5">
                       <button
                         onClick={() => {
                           setVideoError(false);
                           setStreamAttempt((prev) => (prev === 0 ? 1 : 0));
                         }}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-200 border border-cyan-400/30 text-xs font-bold hover:bg-cyan-500/30 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-cyan-500/20 text-cyan-200 border border-cyan-400/30 text-xs font-bold hover:bg-cyan-500/30 transition cursor-pointer"
                       >
-                        <Play size={13} /> {streamAttempt === 0 ? 'Putar Direct CDN' : 'Putar Proxy Server'}
+                        <Play size={12} /> {streamAttempt === 0 ? 'Putar Direct CDN' : 'Putar Proxy Server'}
                       </button>
                       <button
                         onClick={() => {
@@ -695,9 +695,9 @@ export default function App() {
                           setStreamAttempt(0);
                           fetchInfo();
                         }}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-200 border border-rose-400/30 text-xs font-bold hover:bg-rose-500/30 transition cursor-pointer"
                       >
-                        <RefreshCw size={13} /> Coba Muat Ulang
+                        <RefreshCw size={12} /> Coba Muat Ulang
                       </button>
                     </div>
                   </div>
@@ -708,8 +708,15 @@ export default function App() {
                     src={streamSrc}
                     poster={video.thumbnail}
                     controls
+                    loop
                     playsInline
                     preload="metadata"
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={(e) => {
+                      e.target.currentTime = start || 0;
+                      e.target.play().catch(() => {});
+                    }}
                     onLoadedMetadata={(e) => {
                       const v = e.target;
                       if (v.videoWidth && v.videoHeight) {
@@ -754,7 +761,15 @@ export default function App() {
                         });
                       }
                     }}
-                    onTimeUpdate={(e) => setNow(e.target.currentTime)}
+                    onTimeUpdate={(e) => {
+                      const ct = e.target.currentTime;
+                      setNow(ct);
+                      // Putar ulang otomatis jika mencapai batas durasi pangkas akhir
+                      if (end > start && ct >= end) {
+                        e.target.currentTime = start;
+                        e.target.play().catch(() => {});
+                      }
+                    }}
                     onError={(e) => {
                       console.warn("Video stream load error, trying fallback...", e);
                       if (streamAttempt === 0 && video.streamUrl) {
@@ -763,10 +778,10 @@ export default function App() {
                         setVideoError(true);
                       }
                     }}
-                    className={`mx-auto rounded-xl object-contain bg-black shadow-2xl transition-all duration-300 ${
+                    className={`mx-auto rounded-xl object-contain bg-black shadow-xl transition-all duration-300 ${
                       isVertical
-                        ? 'max-h-[48vh] sm:max-h-[56vh] max-w-[280px] sm:max-w-xs md:max-w-sm w-auto'
-                        : 'max-h-[40vh] sm:max-h-[50vh] w-full max-w-2xl'
+                        ? 'max-h-[38vh] sm:max-h-[46vh] max-w-[220px] sm:max-w-[260px] w-auto'
+                        : 'max-h-[28vh] sm:max-h-[36vh] w-full max-w-lg'
                     }`}
                   />
                 )}

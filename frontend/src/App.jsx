@@ -8,7 +8,9 @@ import {
 } from 'lucide-react';
 
 const getBackendUrl = () => {
-  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || '';
+  const viteUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || '';
+  const reactAppUrl = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) || '';
+  const envUrl = viteUrl || reactAppUrl;
   if (envUrl && typeof envUrl === 'string' && !envUrl.includes('vercel.app') && !envUrl.includes('localhost')) {
     return envUrl.replace(/\/+$/, '');
   }

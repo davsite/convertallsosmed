@@ -96,7 +96,7 @@ def _fallback_headers_for(url: str) -> dict:
     if any(s in host or s in low for s in ("cdninstagram", "instagram.com", "instagr.am", "fbcdn", "facebook.com", "fb.watch")):
         return {"User-Agent": DESKTOP_UA, "Referer": "https://www.instagram.com/", "Accept": "*/*", "Sec-Fetch-Mode": "cors"}
     if any(s in host or s in low for s in ("googlevideo.com", "youtube.com", "youtu.be", "ytimg")):
-        return {"User-Agent": DESKTOP_UA, "Referer": "https://www.youtube.com/", "Accept": "*/*"}
+        return {"User-Agent": DESKTOP_UA, "Accept": "*/*"}
     if any(s in host or s in low for s in ("twimg.com", "twitter.com", "x.com", "t.co")):
         return {"User-Agent": DESKTOP_UA, "Referer": "https://x.com/", "Accept": "*/*"}
     return {"User-Agent": DESKTOP_UA, "Accept": "*/*"}

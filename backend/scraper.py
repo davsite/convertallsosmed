@@ -504,21 +504,47 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
         if custom_headers and not is_yt:
             ydl_opts["http_headers"] = custom_headers
 
-        if os.path.exists(cookie_path):
-            ydl_opts["cookiefile"] = cookie_path
+        # Dukungan file cookies.txt lokal
+        cookie_candidates = [
+            cookie_path,
+            os.path.join(os.getcwd(), "cookies.txt"),
+            os.path.join(os.path.dirname(__file__), "cookies.txt"),
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), "cookies.txt"),
+            "/app/cookies.txt"
+        ]
+        active_cookie = None
+        for cp in cookie_candidates:
+            if cp and os.path.exists(cp) and os.path.getsize(cp) > 10:
+                active_cookie = cp
+                break
 
-        # Dukungan cookie via Environment Variable YOUTUBE_COOKIES
+        if active_cookie:
+            ydl_opts["cookiefile"] = active_cookie
+
+        # Dukungan cookie via Environment Variable YOUTUBE_COOKIES (Plain text atau Base64)
         cookies_env = os.environ.get("YOUTUBE_COOKIES", "").strip()
-        if cookies_env and not os.path.exists(cookie_path):
+        if cookies_env:
             try:
+                import base64
+                if not ("\t" in cookies_env or "# Netscape" in cookies_env):
+                    try:
+                        decoded = base64.b64decode(cookies_env).decode("utf-8")
+                        if "# Netscape" in decoded or "\t" in decoded:
+                            cookies_env = decoded
+                    except Exception:
+                        pass
                 temp_cookie = os.path.join(os.path.dirname(__file__), "env_cookies.txt")
                 with open(temp_cookie, "w", encoding="utf-8") as cf:
                     cf.write(cookies_env)
                 ydl_opts["cookiefile"] = temp_cookie
-            except Exception:
-                pass
+            except Exception as ce:
+                logger.warning(f"Gagal memuat env YOUTUBE_COOKIES: {ce}")
 
-        if settings.PROXIES:
+        # Dukungan Proxy khusus YouTube (YOUTUBE_PROXY) atau PROXIES
+        yt_proxy = os.environ.get("YOUTUBE_PROXY", "").strip()
+        if is_yt and yt_proxy:
+            ydl_opts["proxy"] = yt_proxy
+        elif settings.PROXIES:
             p_url = random.choice(settings.PROXIES)
             ydl_opts["proxy"] = p_url
 
@@ -535,6 +561,12 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
             continue
     else:
         if last_error:
+            err_msg = str(last_error)
+            if "Sign in to confirm you’re not a bot" in err_msg or "bot" in err_msg.lower():
+                raise Exception(
+                    "YouTube mendeteksi IP datacenter server (Bot Protection). "
+                    "Solusi: Pasang variabel 'YOUTUBE_COOKIES' atau 'YOUTUBE_PROXY' di dashboard Railway, atau gunakan platform lain seperti TikTok, Douyin, IG, FB, X, RedNote."
+                )
             raise last_error
         raise Exception("Gagal mengekstrak media.")
 

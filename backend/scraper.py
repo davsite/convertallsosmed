@@ -461,11 +461,11 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
     is_yt = "youtube.com" in url.lower() or "youtu.be" in url.lower()
     client_strategies = (
         [
-            ["android_vr"],
-            ["tv_embedded"],
-            ["android"],
-            ["android_creator"],
-            ["web_embedded"],
+            ["tv_embedded", "android_vr"],
+            ["android", "ios"],
+            ["tv_embedded", "android"],
+            ["android_creator", "web_creator"],
+            ["web", "mweb"],
             None
         ]
         if is_yt

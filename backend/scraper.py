@@ -571,55 +571,71 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
 
     formats = info.get("formats", [])
 
+    def is_playable_stream(f):
+        if not isinstance(f, dict):
+            return False
+        u = str(f.get("url", "")).lower()
+        proto = str(f.get("protocol", "")).lower()
+        if "manifest" in u or ".m3u8" in u or "m3u8" in proto or "dash" in proto or "f4m" in proto:
+            return False
+        return True
+
     stream_url = None
     chosen = None
 
-    # Prioritas 1: Format MP4 yang menggabungkan Video + Audio secara eksplisit
+    # Prioritas 1: Format Progressive MP4 yang menggabungkan Video + Audio secara eksplisit (Direct Stream)
     cands_combined = [
         f for f in formats
         if f.get("ext") == "mp4"
         and f.get("vcodec") not in (None, "none")
         and f.get("acodec") not in (None, "none")
         and f.get("url")
+        and is_playable_stream(f)
     ]
     if cands_combined:
         cands_combined.sort(key=lambda x: int(x.get("height") or 0))
         chosen = cands_combined[-1]
         stream_url = chosen.get("url")
 
-    # Prioritas 2: Progressive MP4 (seperti format Instagram reels 1, 2, 3)
+    # Prioritas 2: Progressive MP4 (seperti format Instagram reels, TikTok, YouTube direct MP4)
     if not stream_url:
         cands_prog = [
             f for f in formats
             if f.get("ext") == "mp4"
-            and f.get("acodec") != "none"
+            and f.get("acodec") not in (None, "none")
             and not str(f.get("format_id", "")).startswith("dash-")
             and f.get("url")
+            and is_playable_stream(f)
         ]
         if cands_prog:
+            cands_prog.sort(key=lambda x: int(x.get("height") or 0))
             chosen = cands_prog[-1]
             stream_url = chosen.get("url")
 
-    # Prioritas 3: Format video apapun yang ada URL-nya
+    # Prioritas 3: Format video progressive direct apapun yang non-manifest
     if not stream_url:
         cands_any = [
             f for f in formats
             if f.get("vcodec") not in (None, "none")
             and f.get("url")
+            and is_playable_stream(f)
         ]
         if cands_any:
             cands_any.sort(key=lambda x: int(x.get("height") or 0))
             chosen = cands_any[-1]
             stream_url = chosen.get("url")
 
-    # Prioritas 4: URL bawaan info jika tersedia
-    final_url = stream_url or info.get("url")
+    # Prioritas 4: URL bawaan info jika tersedia dan bukan manifest
+    final_url = stream_url or (info.get("url") if is_playable_stream(info) else None)
     if not final_url and formats:
         for f in reversed(formats):
-            if f.get("url"):
+            if f.get("url") and is_playable_stream(f):
                 chosen = f
                 final_url = f.get("url")
                 break
+        if not final_url and formats:
+            chosen = formats[-1]
+            final_url = formats[-1].get("url")
 
     if not final_url:
         raise Exception("yt-dlp tidak dapat menemukan URL stream video yang valid.")

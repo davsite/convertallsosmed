@@ -174,11 +174,13 @@ export default function App() {
   const toggleMute = () => {
     const v = videoRef.current;
     if (!v) return;
-    const nextMute = !isMuted;
+    const nextMute = !v.muted;
     v.muted = nextMute;
     setIsMuted(nextMute);
     if (!nextMute) {
-      v.volume = volume || 1;
+      v.volume = 1;
+      setVolume(1);
+      v.play().catch(() => {});
     }
   };
 
@@ -701,7 +703,7 @@ export default function App() {
                     loop
                     playsInline
                     preload="metadata"
-                    muted={isMuted}
+                    defaultMuted={true}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onVolumeChange={(e) => {
@@ -714,9 +716,9 @@ export default function App() {
                     }}
                     onLoadedMetadata={(e) => {
                       const v = e.target;
-                      v.volume = volume;
+                      v.volume = 1;
                       v.muted = isMuted;
-                      // Coba putar bersuara, jika browser memblokir unmuted autoplay, putar muted
+                      // Coba putar otomatis
                       v.play().catch(() => {
                         v.muted = true;
                         setIsMuted(true);

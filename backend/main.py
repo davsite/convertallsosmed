@@ -172,7 +172,7 @@ stream_http_session.mount("http://", stream_adapter)
 
 @app.get("/api/stream")
 @app.get("/stream")
-def stream_video_proxy(url: str, request: Request):
+def stream_video_proxy(url: str, request: Request, vid: Optional[str] = None):
     """Streaming Video Preview Proxy Universal untuk 7 platform sosmed."""
     try:
         req_url = unquote(url).strip()
@@ -200,6 +200,25 @@ def stream_video_proxy(url: str, request: Request):
             client_req = stream_http_session.get(
                 req_url, headers=fb_headers, stream=True, timeout=(6, 60), allow_redirects=True, verify=False
             )
+
+        # Jika ditolak CDN karena IP mismatch (Google Video IP binding 403), refresh URL dari worker saat ini
+        if client_req.status_code in (403, 401, 400) and "googlevideo.com" in req_url:
+            client_req.close()
+            try:
+                v_target = vid or request.query_params.get("canonical_url")
+                if v_target:
+                    fresh_info = extract_media_info(v_target)
+                    new_direct = fresh_info.get("direct_url")
+                    if new_direct and new_direct != req_url:
+                        req_url = new_direct
+                        headers = fresh_info.get("stream_headers") or _fallback_headers_for(new_direct)
+                        if range_header:
+                            headers["Range"] = range_header
+                        client_req = stream_http_session.get(
+                            req_url, headers=headers, stream=True, timeout=(6, 60), allow_redirects=True, verify=False
+                        )
+            except Exception as re_err:
+                logger.warning(f"Re-extract stream fallback error: {re_err}")
 
         # Jika ditolak CDN karena Referer/Auth, coba fallback headers
         if client_req.status_code in (403, 401, 400):

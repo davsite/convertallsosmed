@@ -184,13 +184,15 @@ export default function App() {
     if (streamAttempt === 1) {
       return video.streamUrl;
     }
-    return `${API}/api/stream?url=${encodeURIComponent(video.streamUrl)}`;
-  }, [video.streamUrl, streamAttempt]);
+    const cUrl = encodeURIComponent(video.canonicalUrl || url || '');
+    return `${API}/api/stream?url=${encodeURIComponent(video.streamUrl)}&vid=${cUrl}`;
+  }, [video.streamUrl, video.canonicalUrl, url, streamAttempt]);
 
   const audioSrc = useMemo(() => {
     if (!video.audioUrl) return undefined;
-    return `${API}/api/stream?url=${encodeURIComponent(video.audioUrl)}`;
-  }, [video.audioUrl]);
+    const cUrl = encodeURIComponent(video.canonicalUrl || url || '');
+    return `${API}/api/stream?url=${encodeURIComponent(video.audioUrl)}&vid=${cUrl}`;
+  }, [video.audioUrl, video.canonicalUrl, url]);
 
   const seek = (t) => {
     if (videoRef.current) videoRef.current.currentTime = t;

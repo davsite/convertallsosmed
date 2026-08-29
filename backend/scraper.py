@@ -583,46 +583,38 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
     stream_url = None
     chosen = None
 
-    # Prioritas 1: Format Progressive MP4 yang menggabungkan Video + Audio secara eksplisit (Direct Stream)
+    # Prioritas 1: Format Progressive Video + Audio (misal format 18/22 atau direct MP4 reels/tiktok)
     cands_combined = [
         f for f in formats
-        if f.get("ext") == "mp4"
-        and f.get("vcodec") not in (None, "none")
+        if f.get("vcodec") not in (None, "none")
         and f.get("acodec") not in (None, "none")
         and f.get("url")
         and is_playable_stream(f)
     ]
     if cands_combined:
-        cands_combined.sort(key=lambda x: int(x.get("height") or 0))
+        # Utamakan MP4, lalu urutkan berdasarkan height
+        cands_combined.sort(key=lambda x: (1 if x.get("ext") == "mp4" else 0, int(x.get("height") or 0)))
         chosen = cands_combined[-1]
         stream_url = chosen.get("url")
 
-    # Prioritas 2: Progressive MP4 (seperti format Instagram reels, TikTok, YouTube direct MP4)
+    # Prioritas 2: Format khusus format 18 / 22 (YouTube native video+audio) jika belum terpilih
     if not stream_url:
-        cands_prog = [
-            f for f in formats
-            if f.get("ext") == "mp4"
-            and f.get("acodec") not in (None, "none")
-            and not str(f.get("format_id", "")).startswith("dash-")
-            and f.get("url")
-            and is_playable_stream(f)
-        ]
-        if cands_prog:
-            cands_prog.sort(key=lambda x: int(x.get("height") or 0))
-            chosen = cands_prog[-1]
-            stream_url = chosen.get("url")
+        for f in formats:
+            if str(f.get("format_id")) in ("18", "22") and f.get("url") and is_playable_stream(f):
+                chosen = f
+                stream_url = f.get("url")
+                break
 
-    # Prioritas 3: Format video progressive direct apapun yang non-manifest
+    # Prioritas 3: Format video apapun yang memiliki audio
     if not stream_url:
-        cands_any = [
+        cands_with_audio = [
             f for f in formats
-            if f.get("vcodec") not in (None, "none")
+            if f.get("acodec") not in (None, "none")
             and f.get("url")
             and is_playable_stream(f)
         ]
-        if cands_any:
-            cands_any.sort(key=lambda x: int(x.get("height") or 0))
-            chosen = cands_any[-1]
+        if cands_with_audio:
+            chosen = cands_with_audio[-1]
             stream_url = chosen.get("url")
 
     # Prioritas 4: URL bawaan info jika tersedia dan bukan manifest
@@ -647,6 +639,19 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
         stream_headers.update(custom_headers)
     else:
         stream_headers = {"User-Agent": DESKTOP_UA, "Referer": url}
+
+    # Ekstraksi dedicated audio stream jika tersedia (misal AAC itag 140 / MP3)
+    audio_url = None
+    audio_cands = [
+        f for f in formats
+        if f.get("acodec") not in (None, "none")
+        and f.get("url")
+        and is_playable_stream(f)
+    ]
+    if audio_cands:
+        # Utamakan format audio AAC / M4A itag 140 atau bitrate tertinggi
+        audio_cands.sort(key=lambda x: (1 if x.get("ext") in ("m4a", "mp4", "mp3") else 0, float(x.get("tbr") or x.get("abr") or 0)))
+        audio_url = audio_cands[-1].get("url")
 
     dur = info.get("duration")
     duration = int(dur) if dur and dur > 0 else 0
@@ -673,6 +678,7 @@ def _extract_with_ytdlp(url: str, custom_headers: Optional[dict] = None) -> Dict
         "thumbnail": info.get("thumbnail"),
         "duration": duration,
         "direct_url": final_url,
+        "audio_url": audio_url,
         "qualities": _quality_ladder(formats),
         "stream_headers": stream_headers
     }

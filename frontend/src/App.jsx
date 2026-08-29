@@ -102,7 +102,7 @@ export default function App() {
   const [prog, setProg] = useState(null);
   const [backendPing, setBackendPing] = useState({ online: true, latency: 38 });
 
-  const [video, setVideo] = useState({ title: '', thumbnail: '', streamUrl: '', duration: 0, qualities: [], canonicalUrl: '' });
+  const [video, setVideo] = useState({ title: '', thumbnail: '', streamUrl: '', audioUrl: '', duration: 0, qualities: [], canonicalUrl: '' });
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(0);
   const [now, setNow] = useState(0);
@@ -111,6 +111,7 @@ export default function App() {
   const [elapsedMs, setElapsedMs] = useState(0);
 
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
   const trackRef = useRef(null);
   const dragRef = useRef(null);
   const dark = theme === 'dark';
@@ -173,14 +174,15 @@ export default function App() {
 
   const toggleMute = () => {
     const v = videoRef.current;
-    if (!v) return;
-    const nextMute = !v.muted;
-    v.muted = nextMute;
+    const a = audioRef.current;
+    const nextMute = !isMuted;
     setIsMuted(nextMute);
+    if (v) v.muted = nextMute;
+    if (a) a.muted = nextMute;
     if (!nextMute) {
-      v.volume = 1;
+      if (v) { v.volume = 1; v.play().catch(() => {}); }
+      if (a) { a.volume = 1; a.play().catch(() => {}); }
       setVolume(1);
-      v.play().catch(() => {});
     }
   };
 
@@ -201,15 +203,26 @@ export default function App() {
     return `${API}/api/stream?url=${encodeURIComponent(video.streamUrl)}`;
   }, [video.streamUrl, streamAttempt]);
 
-  const seek = (t) => { if (videoRef.current) videoRef.current.currentTime = t; };
+  const audioSrc = useMemo(() => {
+    if (!video.audioUrl) return undefined;
+    return `${API}/api/stream?url=${encodeURIComponent(video.audioUrl)}`;
+  }, [video.audioUrl]);
+
+  const seek = (t) => {
+    if (videoRef.current) videoRef.current.currentTime = t;
+    if (audioRef.current) audioRef.current.currentTime = t;
+  };
 
   const togglePlay = () => {
     const v = videoRef.current;
+    const a = audioRef.current;
     if (!v) return;
     if (v.paused) {
       v.play().catch(() => {});
+      if (a) a.play().catch(() => {});
     } else {
       v.pause();
+      if (a) a.pause();
     }
   };
 
@@ -323,6 +336,7 @@ export default function App() {
         title: d.title || 'Video Media',
         thumbnail: d.thumbnail,
         streamUrl: d.direct_url,
+        audioUrl: d.audio_url || '',
         duration: dur,
         qualities: d.qualities || [],
         canonicalUrl: d.canonical_url || url.trim()
@@ -693,102 +707,139 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  <video
-                    ref={videoRef}
-                    key={`vid-${streamAttempt}-${streamSrc}`}
-                    src={streamSrc}
-                    poster={video.thumbnail}
-                    controls
-                    autoPlay
-                    loop
-                    playsInline
-                    preload="metadata"
-                    defaultMuted={true}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onVolumeChange={(e) => {
-                      setIsMuted(e.target.muted);
-                      setVolume(e.target.volume);
-                    }}
-                    onEnded={(e) => {
-                      e.target.currentTime = start || 0;
-                      e.target.play().catch(() => {});
-                    }}
-                    onLoadedMetadata={(e) => {
-                      const v = e.target;
-                      v.volume = 1;
-                      v.muted = isMuted;
-                      // Coba putar otomatis
-                      v.play().catch(() => {
-                        v.muted = true;
-                        setIsMuted(true);
-                        v.play().catch(() => {});
-                      });
-
-                      if (v.videoWidth && v.videoHeight) {
-                        const w = v.videoWidth;
-                        const h = v.videoHeight;
-                        const isVert = h > w;
-                        setIsVertical(isVert);
-                        const r = w / h;
-                        if (r <= 0.65) {
-                          setVideoRatio('9:16 (Vertikal / Reels)');
-                        } else if (r >= 1.45) {
-                          setVideoRatio('16:9 (Lanskap)');
-                        } else if (Math.abs(r - 1) < 0.2) {
-                          setVideoRatio('1:1 (Persegi)');
-                        } else if (isVert) {
-                          setVideoRatio(`${w}x${h} (Vertikal)`);
-                        } else {
-                          setVideoRatio(`${w}x${h} (Lanskap)`);
+                  <>
+                    <video
+                      ref={videoRef}
+                      key={`vid-${streamAttempt}-${streamSrc}`}
+                      src={streamSrc}
+                      poster={video.thumbnail}
+                      controls
+                      autoPlay
+                      loop
+                      playsInline
+                      preload="metadata"
+                      defaultMuted={true}
+                      onPlay={() => {
+                        setIsPlaying(true);
+                        if (audioRef.current && audioRef.current.paused) audioRef.current.play().catch(() => {});
+                      }}
+                      onPause={() => {
+                        setIsPlaying(false);
+                        if (audioRef.current && !audioRef.current.paused) audioRef.current.pause();
+                      }}
+                      onVolumeChange={(e) => {
+                        const m = e.target.muted;
+                        const vol = e.target.volume;
+                        setIsMuted(m);
+                        setVolume(vol);
+                        if (audioRef.current) {
+                          audioRef.current.muted = m;
+                          audioRef.current.volume = vol;
                         }
-                      }
-                      if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
-                        const trueDur = Number(v.duration.toFixed(2));
-                        setVideo((prev) => ({ ...prev, duration: trueDur }));
-                        setEnd((prevEnd) => {
-                          if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
-                            return trueDur;
-                          }
-                          return prevEnd;
+                      }}
+                      onEnded={(e) => {
+                        e.target.currentTime = start || 0;
+                        e.target.play().catch(() => {});
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = start || 0;
+                          audioRef.current.play().catch(() => {});
+                        }
+                      }}
+                      onLoadedMetadata={(e) => {
+                        const v = e.target;
+                        v.volume = 1;
+                        v.muted = isMuted;
+                        // Coba putar otomatis
+                        v.play().catch(() => {
+                          v.muted = true;
+                          setIsMuted(true);
+                          v.play().catch(() => {});
                         });
-                      }
-                    }}
-                    onDurationChange={(e) => {
-                      const v = e.target;
-                      if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
-                        const trueDur = Number(v.duration.toFixed(2));
-                        setVideo((prev) => ({ ...prev, duration: trueDur }));
-                        setEnd((prevEnd) => {
-                          if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
-                            return trueDur;
+                        if (audioRef.current) {
+                          audioRef.current.volume = 1;
+                          audioRef.current.muted = isMuted;
+                          audioRef.current.play().catch(() => {});
+                        }
+
+                        if (v.videoWidth && v.videoHeight) {
+                          const w = v.videoWidth;
+                          const h = v.videoHeight;
+                          const isVert = h > w;
+                          setIsVertical(isVert);
+                          const r = w / h;
+                          if (r <= 0.65) {
+                            setVideoRatio('9:16 (Vertikal / Reels)');
+                          } else if (r >= 1.45) {
+                            setVideoRatio('16:9 (Lanskap)');
+                          } else if (Math.abs(r - 1) < 0.2) {
+                            setVideoRatio('1:1 (Persegi)');
+                          } else if (isVert) {
+                            setVideoRatio(`${w}x${h} (Vertikal)`);
+                          } else {
+                            setVideoRatio(`${w}x${h} (Lanskap)`);
                           }
-                          return prevEnd;
-                        });
-                      }
-                    }}
-                    onTimeUpdate={(e) => {
-                      const ct = e.target.currentTime;
-                      setNow(ct);
-                      // Putar ulang otomatis jika mencapai batas durasi pangkas akhir
-                      if (end > start && ct >= end) {
-                        e.target.currentTime = start;
-                      }
-                    }}
-                    onError={(e) => {
-                      console.warn("Video stream load error, trying fallback...", e);
-                      if (streamAttempt === 0 && video.streamUrl) {
-                        setStreamAttempt(1);
-                      } else {
-                        setVideoError(true);
-                      }
-                    }}
-                    className={`mx-auto rounded-xl object-contain bg-black shadow-2xl transition-all duration-300 ${
-                      isVertical
-                        ? 'max-h-[46vh] sm:max-h-[54vh] max-w-[260px] sm:max-w-[300px] md:max-w-[330px] w-auto'
-                        : 'max-h-[36vh] sm:max-h-[46vh] w-full max-w-2xl'
-                    }`}
-                  />
+                        }
+                        if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
+                          const trueDur = Number(v.duration.toFixed(2));
+                          setVideo((prev) => ({ ...prev, duration: trueDur }));
+                          setEnd((prevEnd) => {
+                            if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
+                              return trueDur;
+                            }
+                            return prevEnd;
+                          });
+                        }
+                      }}
+                      onDurationChange={(e) => {
+                        const v = e.target;
+                        if (v.duration && Number.isFinite(v.duration) && v.duration > 0) {
+                          const trueDur = Number(v.duration.toFixed(2));
+                          setVideo((prev) => ({ ...prev, duration: trueDur }));
+                          setEnd((prevEnd) => {
+                            if (prevEnd <= 0 || prevEnd === video.duration || prevEnd > trueDur || Math.abs(prevEnd - 30) < 0.1 || Math.abs(prevEnd - 60) < 0.1) {
+                              return trueDur;
+                            }
+                            return prevEnd;
+                          });
+                        }
+                      }}
+                      onTimeUpdate={(e) => {
+                        const ct = e.target.currentTime;
+                        setNow(ct);
+                        if (audioRef.current && Math.abs(audioRef.current.currentTime - ct) > 0.3) {
+                          audioRef.current.currentTime = ct;
+                        }
+                        // Putar ulang otomatis jika mencapai batas durasi pangkas akhir
+                        if (end > start && ct >= end) {
+                          e.target.currentTime = start;
+                          if (audioRef.current) audioRef.current.currentTime = start;
+                        }
+                      }}
+                      onError={(e) => {
+                        console.warn("Video stream load error, trying fallback...", e);
+                        if (streamAttempt === 0 && video.streamUrl) {
+                          setStreamAttempt(1);
+                        } else {
+                          setVideoError(true);
+                        }
+                      }}
+                      className={`mx-auto rounded-xl object-contain bg-black shadow-2xl transition-all duration-300 ${
+                        isVertical
+                          ? 'max-h-[46vh] sm:max-h-[54vh] max-w-[260px] sm:max-w-[300px] md:max-w-[330px] w-auto'
+                          : 'max-h-[36vh] sm:max-h-[46vh] w-full max-w-2xl'
+                      }`}
+                    />
+                    {audioSrc && (
+                      <audio
+                        ref={audioRef}
+                        key={`aud-${streamAttempt}-${audioSrc}`}
+                        src={audioSrc}
+                        preload="auto"
+                        defaultMuted={isMuted}
+                        loop
+                      />
+                    )}
+                  </>
                 )}
               </div>
 

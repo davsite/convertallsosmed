@@ -164,6 +164,12 @@ def get_media_info(request: URLRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+stream_http_session = requests.Session()
+stream_adapter = requests.adapters.HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=2)
+stream_http_session.mount("https://", stream_adapter)
+stream_http_session.mount("http://", stream_adapter)
+
+
 @app.get("/api/stream")
 @app.get("/stream")
 def stream_video_proxy(url: str, request: Request):
@@ -184,15 +190,15 @@ def stream_video_proxy(url: str, request: Request):
 
         client_req = None
         try:
-            client_req = requests.get(
-                req_url, headers=headers, stream=True, timeout=(8, 60), allow_redirects=True, verify=False
+            client_req = stream_http_session.get(
+                req_url, headers=headers, stream=True, timeout=(6, 60), allow_redirects=True, verify=False
             )
         except Exception:
             fb_headers = _fallback_headers_for(req_url)
             if range_header:
                 fb_headers["Range"] = range_header
-            client_req = requests.get(
-                req_url, headers=fb_headers, stream=True, timeout=(8, 60), allow_redirects=True, verify=False
+            client_req = stream_http_session.get(
+                req_url, headers=fb_headers, stream=True, timeout=(6, 60), allow_redirects=True, verify=False
             )
 
         # Jika ditolak CDN karena Referer/Auth, coba fallback headers
@@ -201,8 +207,8 @@ def stream_video_proxy(url: str, request: Request):
             fb_headers = _fallback_headers_for(req_url)
             if range_header:
                 fb_headers["Range"] = range_header
-            client_req = requests.get(
-                req_url, headers=fb_headers, stream=True, timeout=(8, 60), allow_redirects=True, verify=False
+            client_req = stream_http_session.get(
+                req_url, headers=fb_headers, stream=True, timeout=(6, 60), allow_redirects=True, verify=False
             )
             # Jika masih 403, coba tanpa Referer dengan Desktop UA standar
             if client_req.status_code in (403, 401, 400):
@@ -210,8 +216,8 @@ def stream_video_proxy(url: str, request: Request):
                 bare_headers = {"User-Agent": DESKTOP_UA, "Accept": "*/*"}
                 if range_header:
                     bare_headers["Range"] = range_header
-                client_req = requests.get(
-                    req_url, headers=bare_headers, stream=True, timeout=(8, 60), allow_redirects=True, verify=False
+                client_req = stream_http_session.get(
+                    req_url, headers=bare_headers, stream=True, timeout=(6, 60), allow_redirects=True, verify=False
                 )
 
         resp_headers = {

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Search, Scissors, Download, Loader2, AlertCircle, CheckCircle,
   Tv, Camera, Music, Globe, Image as ImageIcon,
-  Sun, Moon, Clock, Volume2, RefreshCw, Play, Sparkles,
+  Sun, Moon, Clock, Volume2, VolumeX, RefreshCw, Play, Sparkles,
   Clipboard, X, Zap, Film, ShieldCheck, ExternalLink, Activity,
   Sliders, Smartphone, Monitor, Pause
 } from 'lucide-react';
@@ -96,6 +96,8 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
   const [videoRatio, setVideoRatio] = useState('Otomatis');
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
   const [toast, setToast] = useState('');
   const [prog, setProg] = useState(null);
   const [backendPing, setBackendPing] = useState({ online: true, latency: 38 });
@@ -169,27 +171,16 @@ export default function App() {
     return () => clearTimeout(id);
   }, [toast]);
 
-  // Preview video memutar tepat di dalam rentang potong
-  useEffect(() => {
+  const toggleMute = () => {
     const v = videoRef.current;
-    if (!v || state !== 'preview') return;
-    const onTime = () => {
-      setNow(v.currentTime);
-      if (v.currentTime >= end) v.currentTime = start;
-      if (v.currentTime < start - 0.3) v.currentTime = start;
-    };
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-
-    v.addEventListener('timeupdate', onTime);
-    v.addEventListener('play', onPlay);
-    v.addEventListener('pause', onPause);
-    return () => {
-      v.removeEventListener('timeupdate', onTime);
-      v.removeEventListener('play', onPlay);
-      v.removeEventListener('pause', onPause);
-    };
-  }, [start, end, state]);
+    if (!v) return;
+    const nextMute = !isMuted;
+    v.muted = nextMute;
+    setIsMuted(nextMute);
+    if (!nextMute) {
+      v.volume = volume || 1;
+    }
+  };
 
   const active = platformOf(url);
   const busy = state === 'processing' || state === 'downloading';
@@ -626,8 +617,21 @@ export default function App() {
                   <span className="font-bold tracking-wider text-slate-200">STUDIO PREVIEW</span>
                 </div>
                 
-                {/* Dynamic Auto Aspect Ratio Badge */}
-                <div className="flex items-center gap-2">
+                {/* Dynamic Auto Aspect Ratio & Sound Controls */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={toggleMute}
+                    title={isMuted ? 'Aktifkan Suara Video' : 'Bisukan Suara Video'}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-mono font-bold transition border cursor-pointer ${
+                      isMuted
+                        ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25'
+                        : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25'
+                    }`}
+                  >
+                    {isMuted ? <VolumeX size={12} className="text-amber-400" /> : <Volume2 size={12} className="text-emerald-400" />}
+                    <span>{isMuted ? 'Suara: Mati' : 'Suara: Nyala'}</span>
+                  </button>
+
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] sm:text-[11px] font-mono font-bold shadow-sm">
                     <Monitor size={12} className="text-cyan-400" />
                     <span>Rasio: {videoRatio}</span>
@@ -644,6 +648,17 @@ export default function App() {
 
               {/* Responsive Video Container - Automatically Fits Vertical (TikTok/Reels) or Landscape (YouTube) */}
               <div className="relative overflow-hidden bg-black flex items-center justify-center p-2.5 sm:p-4 min-h-[220px] sm:min-h-[300px]">
+                {/* Floating Unmute Alert if Browser Muted Video Autoplay */}
+                {isMuted && !videoError && (
+                  <button
+                    onClick={toggleMute}
+                    className="absolute top-4 left-4 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 text-amber-300 border border-amber-400/40 text-xs font-bold shadow-xl backdrop-blur hover:bg-slate-900 hover:scale-105 transition cursor-pointer"
+                  >
+                    <VolumeX size={14} className="text-amber-400 animate-pulse" />
+                    <span>Klik untuk Aktifkan Suara 🔊</span>
+                  </button>
+                )}
+
                 {videoError ? (
                   <div className="p-6 sm:p-8 text-center space-y-3 bg-slate-900/95 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[260px]">
                     <AlertCircle size={36} className="text-rose-400 animate-bounce" />
@@ -685,19 +700,29 @@ export default function App() {
                     autoPlay
                     loop
                     playsInline
-                    preload="auto"
-                    onCanPlay={(e) => {
-                      e.target.play().catch(() => {});
-                    }}
+                    preload="metadata"
+                    muted={isMuted}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
+                    onVolumeChange={(e) => {
+                      setIsMuted(e.target.muted);
+                      setVolume(e.target.volume);
+                    }}
                     onEnded={(e) => {
                       e.target.currentTime = start || 0;
                       e.target.play().catch(() => {});
                     }}
                     onLoadedMetadata={(e) => {
                       const v = e.target;
-                      v.play().catch(() => {});
+                      v.volume = volume;
+                      v.muted = isMuted;
+                      // Coba putar bersuara, jika browser memblokir unmuted autoplay, putar muted
+                      v.play().catch(() => {
+                        v.muted = true;
+                        setIsMuted(true);
+                        v.play().catch(() => {});
+                      });
+
                       if (v.videoWidth && v.videoHeight) {
                         const w = v.videoWidth;
                         const h = v.videoHeight;
@@ -746,7 +771,6 @@ export default function App() {
                       // Putar ulang otomatis jika mencapai batas durasi pangkas akhir
                       if (end > start && ct >= end) {
                         e.target.currentTime = start;
-                        e.target.play().catch(() => {});
                       }
                     }}
                     onError={(e) => {

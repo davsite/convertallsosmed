@@ -375,7 +375,7 @@ export default function App() {
       const href = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = href;
-      a.download = `Cuplik_${fmt(start).replace(':', '-')}_${fmt(end).replace(':', '-')}.${format}`;
+      a.download = `Sosmedify_${fmt(start).replace(':', '-')}_${fmt(end).replace(':', '-')}.${format}`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(href);
       setState('preview'); setProg(null);
@@ -428,7 +428,7 @@ export default function App() {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-display text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-rose-500 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Cuplik<span className="text-rose-500">.</span>
+                Sosmedify<span className="text-rose-500">.</span>
               </span>
               <span className="inline-flex px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold uppercase rounded-md bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/25 tracking-wider">
                 STUDIO 3.5

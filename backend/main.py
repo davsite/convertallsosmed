@@ -329,7 +329,7 @@ def process_and_download_sync(req: ProcessRequest):
 
         return FileResponse(
             path=final_path,
-            filename=f"Cuplik_{int(time.time())}.{ext}",
+            filename=f"Sosmedify_{int(time.time())}.{ext}",
             media_type="video/mp4" if ext == "mp4" else "audio/mpeg",
             background=BackgroundTask(safe_remove, final_path)
         )
@@ -401,7 +401,7 @@ def root():
     return {
         "status": "HEALTHY",
         "app_name": settings.APP_NAME,
-        "message": "Cuplik Backend API is live and ready."
+        "message": "Sosmedify Backend API is live and ready."
     }
 
 

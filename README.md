@@ -90,10 +90,11 @@ Sosmedify dilengkapi dengan proyek aplikasi Android native lengkap di dalam dire
 
 ### 📥 Unduh File APK Langsung
 
-| Berkas Aplikasi | Versi | Link Unduhan Langsung | Status |
-| :--- | :---: | :---: | :---: |
-| **📱 Sosmedify App (APK)** | `v1.0.0` | [**⬇️ Unduh File APK Langsung**](https://github.com/davsite/sosmedify/releases) | ![Release](https://img.shields.io/badge/GitHub_Releases-Tersedia-10B981?style=flat-square) |
-| **📦 Build Artifacts (CI)** | `Debug` | [**📦 Unduh via GitHub Actions**](https://github.com/davsite/sosmedify/actions) | ![CI](https://img.shields.io/badge/GitHub_Actions-Auto_Build-06B6D4?style=flat-square) |
+| Berkas Aplikasi | Versi | Ukuran | Link Unduhan Langsung | Status |
+| :--- | :---: | :---: | :---: | :---: |
+| **📱 Sosmedify App (APK)** | `v1.0.0` | ~5.5 MB | [**⬇️ Download `sosmedify-v1.0.0.apk`**](https://github.com/davsite/sosmedify/releases/download/v1.0.0/sosmedify-v1.0.0.apk) | ![Release](https://img.shields.io/badge/GitHub_Releases-v1.0.0-10B981?style=flat-square) |
+| **🏷️ Halaman Semua Rilis** | `Semua` | - | [**🌐 Kunjungi GitHub Releases**](https://github.com/davsite/sosmedify/releases) | ![Releases](https://img.shields.io/badge/Releases-Official-blue?style=flat-square) |
+| **📦 Build Artifacts (CI)** | `Debug` | ~4.5 MB | [**📦 Unduh via GitHub Actions**](https://github.com/davsite/sosmedify/actions) | ![CI](https://img.shields.io/badge/GitHub_Actions-Auto_Build-06B6D4?style=flat-square) |
 
 > [!TIP]
 > **Keunggulan Live Web Sync**:

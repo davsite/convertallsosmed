@@ -12,17 +12,21 @@
   </p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/FastAPI-0.115-059669?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-    <img src="https://img.shields.io/badge/React_19-Vite_6-EC4899?style=for-the-badge&logo=react&logoColor=white" alt="React" />
+    <a href="https://convertallsosmed.vercel.app" target="_blank">
+      <img src="https://img.shields.io/badge/Live_Website-convertallsosmed.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Website" />
+    </a>
     <a href="https://github.com/davsite/sosmedify/releases">
       <img src="https://img.shields.io/badge/Download_APK-v1.0.0-06B6D4?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
     </a>
+    <img src="https://img.shields.io/badge/FastAPI-0.115-059669?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+    <img src="https://img.shields.io/badge/React_19-Vite_6-EC4899?style=for-the-badge&logo=react&logoColor=white" alt="React" />
     <img src="https://img.shields.io/badge/FFmpeg-Proxy_Engine-10B981?style=for-the-badge&logo=ffmpeg&logoColor=white" alt="FFmpeg" />
     <img src="https://img.shields.io/badge/yt--dlp-Latest-F59E0B?style=for-the-badge&logo=youtube&logoColor=white" alt="yt-dlp" />
     <img src="https://img.shields.io/badge/License-MIT-8B5CF6?style=for-the-badge" alt="License" />
   </p>
 
   <p align="center">
+    <a href="https://convertallsosmed.vercel.app"><strong>🌐 Buka Website Live</strong></a> •
     <a href="#-fitur-utama--特徴">Fitur Utama</a> •
     <a href="#-7-alam-sosial-media--対応プラットフォーム">7 Platform</a> •
     <a href="#-aplikasi-android-apk--モバイルアプリ">Aplikasi Android</a> •
@@ -37,6 +41,8 @@
 ---
 
 ## 🍃 Tentang Sosmedify • 概要
+
+> 🌐 **Website Live Production**: [**https://convertallsosmed.vercel.app**](https://convertallsosmed.vercel.app)
 
 **Sosmedify** adalah platform all-in-one berkinerja tinggi untuk mengunduh, memotong klip video (*frame-accurate trim*), dan mengekstrak audio berkualitas studio dari **7 platform media sosial terbesar di dunia**.
 
@@ -114,7 +120,7 @@ Buka file [`android-app/app/src/main/res/values/strings.xml`](file:///c:/Users/u
 
 ```xml
 <!-- Ganti dengan URL domain live website Vercel Anda -->
-<string name="web_url">https://sosmedify.vercel.app</string>
+<string name="web_url">https://convertallsosmed.vercel.app</string>
 ```
 
 ---
@@ -177,7 +183,7 @@ Backend Python FastAPI berjalan di atas Docker container mandiri:
    - **Output Directory**: `dist`
 3. Tambahkan **Environment Variable**:
    - `VITE_API_URL` = `https://<domain-railway-kamu>` *(tanpa tanda slash / di ujung)*
-4. Klik **Deploy**. Webapp Anda langsung aktif di `https://<nama-project>.vercel.app`!
+4. Klik **Deploy**. Webapp Anda langsung aktif di `https://convertallsosmed.vercel.app`!
 
 ---
 

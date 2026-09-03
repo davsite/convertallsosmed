@@ -26,7 +26,7 @@ Buka file:
 
 Cari baris berikut dan ubah dengan URL website live Anda (misal dari Vercel):
 ```xml
-<string name="web_url">https://convertallsosmed.vercel.app</string>
+<string name="web_url">https://sosmedify.vercel.app</string>
 ```
 *Pastikan menyertakan `https://` di awal.*
 
@@ -46,7 +46,7 @@ Kami sudah menyiapkan file alur kerja di `.github/workflows/build-apk.yml`. Anda
    git commit -m "feat: tambahkan aplikasi android sosmedify"
    git push origin main
    ```
-2. Buka repository Anda di GitHub melalui browser: `https://github.com/davsite/convertallsosmed`.
+2. Buka repository Anda di GitHub melalui browser: `https://github.com/davsite/sosmedify`.
 3. Klik tab **Actions** di bagian atas.
 4. Di menu sebelah kiri, klik **Build Sosmedify APK** → klik tombol **Run workflow** → pilih branch `main` → klik **Run workflow**.
 5. Tunggu proses build selesai (sekitar 2–3 menit, gratis).

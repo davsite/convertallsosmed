@@ -92,7 +92,7 @@ Sosmedify dilengkapi dengan proyek aplikasi Android native di dalam folder [`and
 
 ### 🌟 Cara Mudah Mendapatkan File APK (Cloud Build Gratis)
 Proyek ini telah dilengkapi **GitHub Actions** di [`.github/workflows/build-apk.yml`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/.github/workflows/build-apk.yml):
-1. Buka tab **[Actions](https://github.com/davsite/convertallsosmed/actions)** di repository GitHub Anda.
+1. Buka tab **[Actions](https://github.com/davsite/sosmedify/actions)** di repository GitHub Anda.
 2. Pilih workflow **"Build Sosmedify APK"** → klik **Run workflow**.
 3. Tunggu ±2 menit, lalu unduh file **`app-debug.apk`** pada menu **Artifacts**.
 
@@ -104,9 +104,9 @@ Proyek ini telah dilengkapi **GitHub Actions** di [`.github/workflows/build-apk.
 Backend Python FastAPI berjalan di atas Docker container mandiri:
 
 1. Kunjungi [Railway.app](https://railway.app) dan hubungkan akun GitHub Anda.
-2. Klik **New Project** → **Deploy from GitHub repo** → pilih `convertallsosmed`.
+2. Klik **New Project** → **Deploy from GitHub repo** → pilih `sosmedify`.
 3. Railway otomatis mendeteksi [`Dockerfile`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/Dockerfile) & [`railway.json`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/railway.json).
-4. Di tab **Settings** → klik **Generate Domain** (contoh: `https://convertallsosmed-production.up.railway.app`).
+4. Di tab **Settings** → klik **Generate Domain** (contoh: `https://sosmedify-production.up.railway.app`).
 5. Periksa status kesehatan API:
    ```bash
    curl https://<domain-railway-kamu>/api/health
@@ -116,7 +116,7 @@ Backend Python FastAPI berjalan di atas Docker container mandiri:
 ---
 
 ### 🌸 Tahap 2: Deploy Frontend ke Vercel (React + Vite)
-1. Buka [Vercel](https://vercel.com) dan impor repository `convertallsosmed`.
+1. Buka [Vercel](https://vercel.com) dan impor repository `sosmedify`.
 2. Pada bagian konfigurasi:
    - **Framework Preset**: `Vite`
    - **Root Directory**: `frontend`

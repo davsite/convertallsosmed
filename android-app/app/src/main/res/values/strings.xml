@@ -8,7 +8,7 @@
       Setiap kali ada update di website tersebut, aplikasi Android akan otomatis
       memuat tampilan & fitur terbaru tanpa perlu install ulang APK!
     -->
-    <string name="web_url">https://convertallsosmed.vercel.app</string>
+    <string name="web_url">https://sosmedify.vercel.app</string>
     
     <string name="error_offline_title">Koneksi Terputus</string>
     <string name="error_offline_desc">Pastikan ponsel Anda terhubung ke internet untuk menggunakan Sosmedify.</string>

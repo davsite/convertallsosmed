@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sosmedify</string>
+    
+    <!-- 
+      URL WEBSITE UTAMA:
+      Ganti URL di bawah ini dengan domain Vercel atau domain kustom Anda.
+      Setiap kali ada update di website tersebut, aplikasi Android akan otomatis
+      memuat tampilan & fitur terbaru tanpa perlu install ulang APK!
+    -->
+    <string name="web_url">https://convertallsosmed.vercel.app</string>
+    
+    <string name="error_offline_title">Koneksi Terputus</string>
+    <string name="error_offline_desc">Pastikan ponsel Anda terhubung ke internet untuk menggunakan Sosmedify.</string>
+    <string name="btn_retry">Coba Lagi</string>
+    <string name="download_started">Mengunduh media...</string>
+    <string name="download_completed">Unduhan selesai. Tersimpan di folder Download.</string>
+</resources>

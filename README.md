@@ -84,17 +84,60 @@ Dibangun dengan arsitektur modern yang memadukan keindahan antarmuka web, ketang
 
 ## 📱 Aplikasi Android (APK) • モバイルアプリ
 
-Sosmedify dilengkapi dengan proyek aplikasi Android native di dalam folder [`android-app/`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/android-app).
+Sosmedify dilengkapi dengan proyek aplikasi Android native lengkap di dalam direktori terisolasi [`android-app/`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/android-app).
 
 > [!TIP]
 > **Keunggulan Live Web Sync**:
-> Aplikasi Android memuat website live Anda secara langsung. Setiap update di website akan **langsung tampil di smartphone pengguna seketika**, tanpa mereka harus mendownload ulang APK baru!
+> Aplikasi Android memuat website live Anda secara langsung. Setiap pembaruan yang Anda terapkan di website (Vercel) akan **langsung otomatis muncul di smartphone pengguna**, tanpa perlu mengunduh atau menginstal ulang file APK!
 
-### 🌟 Cara Mudah Mendapatkan File APK (Cloud Build Gratis)
-Proyek ini telah dilengkapi **GitHub Actions** di [`.github/workflows/build-apk.yml`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/.github/workflows/build-apk.yml):
+### ⚡ Fitur Utama Aplikasi Mobile
+- **🍃 Native Video & Audio Downloader**: Tombol download terhubung langsung dengan Android `DownloadManager`. File video MP4 dan audio MP3 langsung tersimpan ke folder `Download/` dan otomatis terdeteksi di Galeri HP.
+- **🔄 Pull-to-Refresh**: Usap layar ke bawah untuk memperbarui tampilan web secara cepat.
+- **🛡️ Hardware Back Navigation**: Tombol kembali fisik/gesture Android menavigasi riwayat web, dan memerlukan konfirmasi tekan 2x untuk keluar dari aplikasi.
+- **🌙 Layar Offline Zen**: Menampilkan antarmuka offline bernuansa gelap yang elegan dengan tombol *Coba Lagi* ketika ponsel kehilangan sinyal internet.
+
+---
+
+### ⚙️ Konfigurasi URL Website
+
+Buka file [`android-app/app/src/main/res/values/strings.xml`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/android-app/app/src/main/res/values/strings.xml):
+
+```xml
+<!-- Ganti dengan URL domain live website Vercel Anda -->
+<string name="web_url">https://sosmedify.vercel.app</string>
+```
+
+---
+
+### 🛠️ Cara Menghasilkan File APK
+
+Tersedia 3 opsi praktis untuk mem-build file APK:
+
+#### 🌟 Opsi 1: Build Otomatis di Cloud (GitHub Actions — Gratis & Tanpa Install Apapun)
+Alur kerja otomatis telah disiapkan di [`.github/workflows/build-apk.yml`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/.github/workflows/build-apk.yml):
 1. Buka tab **[Actions](https://github.com/davsite/sosmedify/actions)** di repository GitHub Anda.
-2. Pilih workflow **"Build Sosmedify APK"** → klik **Run workflow**.
-3. Tunggu ±2 menit, lalu unduh file **`app-debug.apk`** pada menu **Artifacts**.
+2. Di menu sebelah kiri, klik **Build Sosmedify APK** → klik tombol **Run workflow** → pilih branch `main` → klik **Run workflow**.
+3. Tunggu proses build selesai (±2–3 menit).
+4. Setelah bercentang hijau, klik run workflow tersebut, scroll ke bawah ke bagian **Artifacts**.
+5. Unduh paket **`Sosmedify-App-Debug`** yang berisi file **`app-debug.apk`** siap pasang di HP!
+
+#### 💻 Opsi 2: Menggunakan Android Studio (PC / Laptop)
+1. Buka software **Android Studio** → pilih **File** → **Open...**.
+2. Arahkan ke folder [`android-app/`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/android-app) dan tunggu proses Gradle Sync selesai.
+3. Klik menu **Build** → **Build Bundle(s) / APK(s)** → **Build APK(s)**.
+4. Klik tautan notifikasi **locate** untuk mengambil file APK.
+
+#### 💻 Opsi 3: Menggunakan Command Line
+Jika komputer Anda sudah terpasang JDK 17+ dan Android SDK:
+```bash
+cd android-app
+# Windows:
+.\gradlew.bat assembleDebug
+
+# Linux / Mac:
+./gradlew assembleDebug
+```
+File APK akan berada di: `android-app/app/build/outputs/apk/debug/app-debug.apk`.
 
 ---
 

@@ -1,148 +1,121 @@
-# 🚀 Panduan Deploy Cuplik — Hosting Gratis
+# 🚀 Panduan Deploy Sosmedify — Fullstack Production
 
-Panduan lengkap menghosting aplikasi ini secara **gratis**:
-**Backend** → Hugging Face Spaces (Docker) · **Frontend** → Vercel.
+Panduan lengkap deployment webapp **Sosmedify** (Video Downloader & Frame-Accurate Trimmer untuk 7 Platform Sosial Media).
 
-Kenapa dipisah? Backend butuh `ffmpeg` + `yt-dlp` (harus Docker),
-sedangkan frontend cuma file statis hasil `npm run build`.
-
----
-
-## ✅ Sebelum mulai — pastikan bug sudah diperbaiki
-
-Ada 1 bug fatal di `backend/main.py` yang bikin fitur unduh selalu error 500.
-Kalau kamu pakai zip `cuplik_fixed.zip`, ini sudah beres. Kalau edit manual:
-
-1. Ganti import:
-   ```python
-   # LAMA (salah):
-   from fastapi.background import BackgroundTasks
-   # BARU (benar):
-   from starlette.background import BackgroundTask
-   ```
-2. Ganti pemakaiannya di endpoint `/api/process`:
-   ```python
-   # LAMA (salah):
-   background=BackgroundTasks(_safe_remove, file_path),
-   # BARU (benar):
-   background=BackgroundTask(_safe_remove, file_path),
-   ```
-
-`BackgroundTask` **tanpa "s"** — kelas jamaknya tidak menerima
-`(fungsi, argumen)` sehingga setiap unduhan langsung TypeError → 500.
+* **Backend**: FastAPI + FFmpeg + yt-dlp → **Railway** (Docker)
+* **Frontend**: React + Vite + Tailwind CSS → **Vercel**
 
 ---
 
-## 🟡 Tahap 1 — Deploy Backend ke Hugging Face Spaces
+## 🌟 Fitur Utama Sosmedify
 
-Dockerfile di folder `backend/` memang sudah disiapkan untuk HF Spaces
-(port 7860, folder `temp_media` writable, `$PORT` fleksibel untuk Render).
+1. **Dukungan 7 Platform Sosial Media**:
+   - **TikTok** (TikWM API / yt-dlp, tanpa watermark)
+   - **Douyin** (TikWM / Halaman share kanonikal)
+   - **Instagram** (Reels, Feed video)
+   - **Facebook** (Watch, Reels, Video publik)
+   - **X / Twitter** (Tweet media)
+   - **RedNote / Xiaohongshu** (Desktop SSR & Direct CDN stream parser kilat 0.3s)
+   - **YouTube** (Multi-tier Anti-Bot `android_vr` client bypass untuk IP datacenter cloud)
+2. **Pemotong Klip Ultra-Presisi**:
+   - Frame-accurate trimming menggunakan FFmpeg stream proxy.
+   - Pilihan format **MP4 Video** dan **MP3 Audio (320k)**.
+   - Tangga resolusi otomatis (1080p, 720p, 480p, dll).
+3. **Monetisasi Siap Pakai (Adsterra)**:
+   - Banner `728x90` (Desktop) & `300x250` (Mobile) terisolasi dalam `iframe srcDoc`.
+   - Native Banner widget di bagian bawah halaman.
 
-1. Daftar / login di <https://huggingface.co>
-2. Klik foto profil → **New Space**
-3. Isi:
-   - **Space name**: misal `cuplik-backend`
-   - **License**: bebas (mis. `mit`)
-   - **Space SDK**: pilih **Docker** → template **Blank**
-   - **Visibility**: Public
-4. Klik **Create Space**
-5. Buka tab **Files** → **Add file → Upload files**
-6. Upload SEMUA isi folder `backend/`:
-   - `Dockerfile`
-   - `main.py`
-   - `requirements.txt`
-   - `.dockerignore`
-   - folder `api/` (berisi `yt_dlp_service.py`, `douyin_service.py`, `ffmpeg_service.py`)
+---
 
-   > ⚠️ JANGAN upload folder `venv/`, `__pycache__/`, atau isi `temp_media/` —
-   > itu file lokal, cuma bikin build lambat.
-7. Commit → HF otomatis build image (~3–5 menit). Pantau di tab **Logs**.
-8. Kalau status sudah **Running**, backend live di:
-   ```
-   https://<username>-cuplik-backend.hf.space
-   ```
-9. **Tes**: buka `https://<username>-cuplik-backend.hf.space/api/health`
-   → harus muncul `{"status":"ok"}`. Kalau iya, lanjut Tahap 2. 🎉
+## 🟡 Tahap 1 — Deploy Backend ke Railway (Rekomendasi Utama)
+
+Backend telah dikonfigurasi dengan root `Dockerfile` dan `railway.json`.
+
+1. Login / Daftar di [Railway.app](https://railway.app).
+2. Klik **New Project** → pilih **Deploy from GitHub repo**.
+3. Pilih repository `convertallsosmed`.
+4. Railway akan otomatis mendeteksi `railway.json` dan membangun container dari `Dockerfile`:
+   - Port internal default: `8080`
+   - Healthcheck endpoint: `/api/health`
+5. Buka tab **Settings** di service Railway Anda:
+   - Di bagian **Networking** → klik **Generate Domain** (contoh domain: `https://convertallsosmed-production.up.railway.app`).
+6. *(Opsional)* Di tab **Variables**, tambahkan variabel lingkungan jika dibutuhkan:
+   - `YOUTUBE_COOKIES`: String konten cookie Netscape jika diperlukan rotasi session YouTube.
+   - `PROXIES`: JSON array string proxy (HTTP/SOCKS5) jika ingin merotasi IP.
+   - `S3_ENDPOINT_URL`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET_NAME`: Untuk penyimpanan Cloudflare R2 / AWS S3 (jika kosong, backend otomatis memakai fallback lokal di `/app/temp_media`).
+7. **Verifikasi Backend**:
+   Buka URL: `https://<domain-railway-kamu>/api/health`  
+   Respons sukses: `{"status":"HEALTHY","app_name":"Sosmedify Converter Service"}`.
 
 ---
 
 ## 🟢 Tahap 2 — Deploy Frontend ke Vercel
 
-1. Push project ini ke repo GitHub (boleh satu repo, `frontend/` sebagai subfolder).
-2. Daftar / login <https://vercel.com> pakai akun GitHub.
-3. **Add New → Project** → pilih repo kamu → **Import**.
-4. Pengaturan penting:
-   - **Root Directory**: klik *Edit* → arahkan ke folder `frontend`
-   - **Framework Preset**: otomatis terdeteksi *Create React App* (biarkan)
-5. Buka bagian **Environment Variables**, tambahkan:
+1. Login / Daftar di [Vercel](https://vercel.com) menggunakan akun GitHub.
+2. Klik **Add New...** → **Project** → pilih repository kamu → **Import**.
+3. Konfigurasi Project:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: Klik *Edit* lalu pilih folder `frontend`.
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Buka bagian **Environment Variables**, tambahkan:
 
-   | Name                | Value                                          |
-   |---------------------|------------------------------------------------|
-   | `REACT_APP_API_URL` | `https://<username>-cuplik-backend.hf.space`   |
+   | Name | Value | Keterangan |
+   | :--- | :--- | :--- |
+   | `VITE_API_URL` | `https://<domain-railway-kamu>` | URL backend Railway kamu (tanpa garis miring `/` di akhir) |
 
-   > ⚠️ Tanpa `/` di akhir URL. Variabel ini dibaca **saat build** —
-   > kalau nanti diganti, wajib **Redeploy** biar kepakai.
-6. Klik **Deploy** → selesai. Web live di `https://<nama-project>.vercel.app`.
-
----
-
-## 🔵 Alternatif (kalau HF / Vercel tidak cocok)
-
-**Backend → Render.com** (free tier):
-1. <https://render.com> → **New → Web Service** → connect repo GitHub
-2. **Root Directory**: `backend` · **Runtime**: Docker
-3. Dockerfile sudah support `$PORT`-nya Render, tidak perlu diubah apa pun.
-4. Catatan free tier: server *sleep* setelah 15 menit sepi; request pertama
-   setelah tidur butuh ±1 menit untuk bangun.
-
-**Frontend → Netlify**:
-1. <https://netlify.com> → **Add new site → Import from Git**
-2. **Base directory**: `frontend` · **Build command**: `npm run build`
-   · **Publish directory**: `frontend/build`
-3. Tambahkan env var `REACT_APP_API_URL` di *Site settings →
-   Environment variables*, lalu redeploy.
+5. Klik **Deploy**.
+6. Webapp Sosmedify akan langsung aktif di `https://<nama-project>.vercel.app`.
 
 ---
 
-## 🧪 Checklist tes setelah live
+## 🔵 Alternatif Backend (Hugging Face Spaces & Render)
 
-- [ ] `GET /api/health` di URL backend → `{"status":"ok"}`
-- [ ] Buka web frontend → tempel link video → klik **Ambil** → preview muncul
-- [ ] Geser rentang potong → klik **Unduh** → file benar-benar terunduh
-- [ ] Coba format MP3 dan JPG juga
+### Alternatif A: Hugging Face Spaces (Docker)
+1. Buat **New Space** di [Hugging Face](https://huggingface.co).
+2. Pilih SDK **Docker** (Blank).
+3. Upload seluruh file backend beserta `backend/Dockerfile` (atau arahkan git repo).
+4. Port default HF Spaces adalah `7860`, container akan otomatis membaca port.
 
----
-
-## ❗ Hal yang wajib kamu tahu
-
-- **HF Spaces gratis akan sleep** kalau lama tidak dipakai (±48 jam idle).
-  Request pertama setelah tidur butuh 1–2 menit untuk cold start.
-- **YouTube sering memblokir IP server cloud** ("Sign in to confirm you're
-  not a bot"). Ini perilaku YouTube ke datacenter, bukan bug kodemu.
-  TikTok / Douyin / Instagram biasanya tetap jalan normal.
-- **Douyin dengan cookie asli (opsional)**: kalau jalur share-page gagal,
-  kamu bisa menaruh file `cookies_douyin.txt` (format Netscape) di folder
-  backend, atau set env var `DOUYIN_COOKIES` berisi path file-nya.
-- File hasil potong dihapus otomatis dari `temp_media/` setelah terkirim
-  ke user (via `BackgroundTask`), jadi storage server tidak menumpuk.
+### Alternatif B: Render.com
+1. Buat **New Web Service** di [Render](https://render.com).
+2. Pilih runtime **Docker** dan arahkan ke root repository.
+3. Catatan Free Tier Render: server akan *sleep* setelah 15 menit idle; request pertama butuh ±1 menit untuk bangun (*cold start*).
 
 ---
 
-## 💻 Menjalankan lokal (untuk development)
+## 💻 Menjalankan Lokal (Development)
 
-**Backend** (butuh Python 3.12+ dan ffmpeg terpasang):
+### 1. Backend (Python 3.12+ & FFmpeg terpasang)
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
+Akses Swagger UI dokumentasi API di: `http://localhost:8000/docs`.
 
-**Frontend**:
+### 2. Frontend (Node.js 18+)
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
+Frontend akan berjalan di: `http://localhost:5173`.
 
-Saat lokal, `REACT_APP_API_URL` boleh kosong — frontend otomatis pakai
-`http://<host-halaman>:8000`, jadi tes dari HP di Wi-Fi yang sama pun bisa.
+---
+
+## 🧪 Checklist Pengujian Pasca Deploy
+
+- [ ] `GET /api/health` mengembalikan status `HEALTHY`.
+- [ ] Buka web frontend → tempel link dari salah satu dari 7 platform → klik **Ambil**.
+- [ ] Pemutar video preview dan filmstrip pemotong waktu muncul.
+- [ ] Geser handle awal dan akhir potong → klik **Unduh**.
+- [ ] File terunduh dengan awalan nama `Sosmedify_...`.
+- [ ] Coba konversi ke **MP3 Audio (320k)**.
+- [ ] Pastikan iklan banner responsif tampil rapi di desktop & mobile.
+
+---
+
+## 🔒 Keamanan & Pembersihan Otomatis
+- Semua file video sementara di `temp_media/` dihapus otomatis setelah file berhasil ditransfer ke user via Starlette `BackgroundTask`.
+- Endpoint `/api/stream` mendukung chunk range video streaming (HTTP 206) untuk preview yang cepat tanpa mendownload seluruh video terlebih dahulu.

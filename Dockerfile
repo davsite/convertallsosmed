@@ -1,4 +1,4 @@
-# Backend Cuplik — Root Dockerfile for Railway / Cloud PaaS
+# Backend Sosmedify — Root Dockerfile for Railway / Cloud PaaS
 FROM python:3.12-slim
 
 # Install ffmpeg & nodejs (wajib untuk JS challenge solver yt-dlp)

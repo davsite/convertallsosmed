@@ -1,4 +1,4 @@
-# Backend Cuplik — siap untuk Hugging Face Spaces / Render (Docker)
+# Backend Sosmedify — siap untuk Hugging Face Spaces / Render (Docker)
 FROM python:3.12-slim
 
 # ffmpeg & nodejs wajib ada untuk memotong video & menyelesaikan JS challenge yt-dlp

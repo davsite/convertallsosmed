@@ -14,7 +14,9 @@
   <p align="center">
     <img src="https://img.shields.io/badge/FastAPI-0.115-059669?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
     <img src="https://img.shields.io/badge/React_19-Vite_6-EC4899?style=for-the-badge&logo=react&logoColor=white" alt="React" />
-    <img src="https://img.shields.io/badge/Android-Live_Sync_APK-06B6D4?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
+    <a href="https://github.com/davsite/sosmedify/releases">
+      <img src="https://img.shields.io/badge/Download_APK-v1.0.0-06B6D4?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
+    </a>
     <img src="https://img.shields.io/badge/FFmpeg-Proxy_Engine-10B981?style=for-the-badge&logo=ffmpeg&logoColor=white" alt="FFmpeg" />
     <img src="https://img.shields.io/badge/yt--dlp-Latest-F59E0B?style=for-the-badge&logo=youtube&logoColor=white" alt="yt-dlp" />
     <img src="https://img.shields.io/badge/License-MIT-8B5CF6?style=for-the-badge" alt="License" />
@@ -85,6 +87,13 @@ Dibangun dengan arsitektur modern yang memadukan keindahan antarmuka web, ketang
 ## 📱 Aplikasi Android (APK) • モバイルアプリ
 
 Sosmedify dilengkapi dengan proyek aplikasi Android native lengkap di dalam direktori terisolasi [`android-app/`](file:///c:/Users/user/OneDrive/Dokumen/ALL%20sosmed%20by%20dav'site/android-app).
+
+### 📥 Unduh File APK Langsung
+
+| Berkas Aplikasi | Versi | Link Unduhan Langsung | Status |
+| :--- | :---: | :---: | :---: |
+| **📱 Sosmedify App (APK)** | `v1.0.0` | [**⬇️ Unduh File APK Langsung**](https://github.com/davsite/sosmedify/releases) | ![Release](https://img.shields.io/badge/GitHub_Releases-Tersedia-10B981?style=flat-square) |
+| **📦 Build Artifacts (CI)** | `Debug` | [**📦 Unduh via GitHub Actions**](https://github.com/davsite/sosmedify/actions) | ![CI](https://img.shields.io/badge/GitHub_Actions-Auto_Build-06B6D4?style=flat-square) |
 
 > [!TIP]
 > **Keunggulan Live Web Sync**:

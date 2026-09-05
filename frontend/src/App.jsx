@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
-  Search, Scissors, Download, Loader2, AlertCircle, CheckCircle,
+  Search, Download, Loader2, AlertCircle, CheckCircle,
   Tv, Camera, Music, Globe, Image as ImageIcon,
   Sun, Moon, Clock, Volume2, RefreshCw, Play, Sparkles,
   Clipboard, X, Zap, Film, ShieldCheck, ExternalLink, Activity,
@@ -421,9 +421,9 @@ export default function App() {
       {/* Header Studio Pro 3.5 */}
       <header className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 pt-5 sm:pt-7 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-rose-500 via-purple-600 to-cyan-500 text-white shadow-xl shadow-rose-500/25 border border-white/20 hover:scale-105 transition-transform cursor-pointer shrink-0">
-            <Scissors size={20} className="rotate-[-10deg]" />
-            <Sparkles size={13} className="absolute -top-1 -right-1 text-amber-300 animate-pulse" />
+          <div className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#080B14]/90 p-1.5 shadow-xl shadow-rose-500/25 border border-white/20 hover:scale-105 hover:border-cyan-400/50 transition-all cursor-pointer shrink-0 overflow-hidden group">
+            <img src="/logo-app.png" alt="Sosmedify Logo" className="w-full h-full object-contain rounded-xl drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+            <Sparkles size={13} className="absolute -top-1 -right-1 text-cyan-300 animate-pulse pointer-events-none" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">

@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="docs/banner.jpg" alt="Sosmedify Nature Banner" width="100%" style="border-radius: 18px; box-shadow: 0 16px 40px rgba(0,0,0,0.3);" />
+  <img src="docs/banner.jpg" alt="Sosmedify Studio UI Showcase Banner" width="100%" style="border-radius: 18px; box-shadow: 0 16px 40px rgba(0,0,0,0.3);" />
 
   <br/><br/>
 
